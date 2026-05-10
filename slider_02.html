@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スライダー</title>
+
+<style>
+body {
+  margin: 0;
+  background: #111;
+}
+
+/* 外枠 */
+.slider-wrap {
+  padding: 0 80px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* スライダー */
+.slider {
+  display: flex;
+  transition: transform 0.5s;
+}
+
+/* 1枚 */
+.slide {
+  min-width: 100%;
+}
+
+.slide img {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+/* 矢印 */
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 30px;
+  color: white;
+  cursor: pointer;
+  user-select: none;
+}
+
+.left {
+  left: 20px;
+}
+
+.right {
+  right: 20px;
+}
+
+/* ドット */
+.dots {
+  position: absolute;
+  bottom: 15px;
+  width: 100%;
+  text-align: center;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin: 5px;
+  background: gray;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.active {
+  background: white;
+}
+
+/* レスポンシブ */
+@media (max-width: 768px) {
+  .slider-wrap {
+    padding: 0 20px;
+  }
+
+  .slide img {
+    height: 250px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="slider-wrap">
+
+  <div class="arrow left" id="prev">&#10094;</div>
+  <div class="arrow right" id="next">&#10095;</div>
+
+  <div class="slider" id="slider">
+    <div class="slide"><img src="https://picsum.photos/id/1015/1200/600"></div>
+    <div class="slide"><img src="https://picsum.photos/id/1016/1200/600"></div>
+    <div class="slide"><img src="https://picsum.photos/id/1025/1200/600"></div>
+    <div class="slide"><img src="https://picsum.photos/id/1035/1200/600"></div>
+  </div>
+
+  <div class="dots" id="dots"></div>
+
+</div>
+
+<script>
+
+var slider = document.getElementById("slider");
+var slides = document.querySelectorAll(".slide");
+var total = slides.length;
+
+var index = 0;
+
+/* =====================
+   スライド移動
+===================== */
+function update() {
+  slider.style.transform = "translateX(-" + (index * 100) + "%)";
+  updateDots();
+}
+
+/* =====================
+   矢印
+===================== */
+document.getElementById("next").addEventListener("click", function() {
+  index++;
+  if (index >= total) index = 0;
+  update();
+});
+
+document.getElementById("prev").addEventListener("click", function() {
+  index--;
+  if (index < 0) index = total - 1;
+  update();
+});
+
+/* =====================
+   ドット
+===================== */
+var dotsContainer = document.getElementById("dots");
+
+for (var i = 0; i < total; i++) {
+  var dot = document.createElement("span");
+  dot.className = "dot";
+
+  (function(i){
+    dot.addEventListener("click", function() {
+      index = i;
+      update();
+    });
+  })(i);
+
+  dotsContainer.appendChild(dot);
+}
+
+function updateDots() {
+  var dots = document.querySelectorAll(".dot");
+  dots.forEach(function(d, i) {
+    d.classList.toggle("active", i === index);
+  });
+}
+
+/* =====================
+   自動スライド
+===================== */
+setInterval(function() {
+  index++;
+  if (index >= total) index = 0;
+  update();
+}, 3000);
+
+/* =====================
+   スワイプ（pointer）
+===================== */
+var startX = 0;
+
+slider.addEventListener("pointerdown", function(e) {
+  startX = e.clientX;
+});
+
+slider.addEventListener("pointerup", function(e) {
+  var diff = e.clientX - startX;
+
+  if (diff > 50) {
+    index--;
+    if (index < 0) index = total - 1;
+  }
+
+  if (diff < -50) {
+    index++;
+    if (index >= total) index = 0;
+  }
+
+  update();
+});
+
+update();
+
+</script>
+
+</body>
+</html>

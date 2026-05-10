@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>毛色シミュレーター</title>
+<style>
+  body {
+    font-family: sans-serif;
+    text-align: center;
+    padding: 40px;
+  }
+  select, button {
+    font-size: 18px;
+    margin: 10px;
+    padding: 5px 10px;
+  }
+  #result {
+    font-size: 40px;
+    margin-top: 20px;
+  }
+</style>
+</head>
+
+<body>
+
+<h1>毛色シミュレーター</h1>
+
+<p>親1</p>
+<select id="p1">
+  <option>栗毛</option>
+  <option>青鹿毛</option>
+  <option>鹿毛</option>
+</select>
+
+<p>親2</p>
+<select id="p2">
+  <option>栗毛</option>
+  <option>青鹿毛</option>
+  <option>鹿毛</option>
+</select>
+
+<br>
+
+<button onclick="run()">生まれる！</button>
+
+<div id="result">？</div>
+
+<script>
+function getChildColor(parent1, parent2) {
+  const baseColors = {
+    栗毛: 10,
+    青鹿毛: 30,
+    鹿毛: 40
+  };
+
+  // ベースをコピー
+  const weights = { ...baseColors };
+
+  // 親の影響
+  //weights[parent1] += 30;
+  //weights[parent2] += 30;
+
+  // 合計
+  const total = Object.values(weights).reduce(function(a, b) {
+    return a + b;
+  }, 0);
+
+  // ランダム
+  let rand = Math.random() * total;
+
+  for (let color in weights) {
+    rand -= weights[color];
+    if (rand < 0) {
+      return color;
+    }
+  }
+}
+
+function run() {
+  const p1 = document.getElementById("p1").value;
+  const p2 = document.getElementById("p2").value;
+
+  const child = getChildColor(p1, p2);
+
+  const result = document.getElementById("result");
+  result.innerText = child;
+
+  // 見た目もちょっと変える
+  if (child === "栗毛") result.style.color = "orange";
+  if (child === "青鹿毛") result.style.color = "black";
+  if (child === "鹿毛") result.style.color = "brown";
+}
+</script>
+
+</body>
+</html>

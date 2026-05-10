@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>クリック数出る</title>
+
+<style>
+  #space {
+    width: 300px;
+    height: 40px;
+  }
+</style>
+</head>
+
+<body>
+
+<div id="space">
+  <h1 id="title">クリックせよ！</h1>
+</div>
+
+<button id="btn">ボタン</button>
+
+<script>
+
+var title = document.getElementById('title');
+var btn = document.getElementById('btn');
+
+function down() {
+  title.textContent = "";
+}
+
+function up() {
+  title.textContent = "クリックせよ！";
+}
+
+/* ★ここがポイント（PC・スマホ共通） */
+btn.addEventListener("pointerdown", function() {
+  down();
+});
+
+btn.addEventListener("pointerup", function() {
+  up();
+});
+
+</script>
+
+</body>
+</html>

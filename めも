@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>メモアプリ</title>
+</head>
+
+<body>
+
+<h1>メモアプリ</h1>
+
+<input id="text" placeholder="メモ">
+<button id="add">追加</button>
+
+<ul id="list"></ul>
+
+<script>
+const input = document.getElementById("text");
+const list = document.getElementById("list");
+
+// 表示読み込み
+async function load() {
+  const res = await fetch("/memos");
+  const data = await res.json();
+
+  list.innerHTML = "";
+
+  data.memos.forEach(m => {
+    const li = document.createElement("li");
+    li.textContent = m;
+    list.appendChild(li);
+  });
+}
+
+load();
+
+// 追加
+document.getElementById("add").addEventListener("click", async () => {
+  const memo = input.value;
+
+  await fetch("/save", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ memo })
+  });
+
+  input.value = "";
+  load();
+});
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>メモアプリ</title>
+</head>
+
+<body>
+
+<h1>メモアプリ</h1>
+
+<input id="text" placeholder="メモ">
+<button id="add">追加</button>
+
+<ul id="list"></ul>
+
+<script>
+const input = document.getElementById("text");
+const list = document.getElementById("list");
+
+// 表示読み込み
+async function load() {
+  const res = await fetch("/memos");
+  const data = await res.json();
+
+  list.innerHTML = "";
+
+  data.memos.forEach(m => {
+    const li = document.createElement("li");
+    li.textContent = m;
+    list.appendChild(li);
+  });
+}
+
+load();
+
+// 追加
+document.getElementById("add").addEventListener("click", async () => {
+  const memo = input.value;
+
+  await fetch("/save", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ memo })
+  });
+
+  input.value = "";
+  load();
+});
+</script>
+
+</body>
+</html>

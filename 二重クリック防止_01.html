@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>二重送信防止</title>
+
+<style>
+  body {
+    font-family: sans-serif;
+    text-align: center;
+    padding: 40px;
+  }
+
+  button {
+    font-size: 18px;
+    padding: 10px 20px;
+  }
+</style>
+</head>
+
+<body>
+
+<h2>送信テスト</h2>
+
+<button id="btn">送信</button>
+
+<script>
+
+var btn = document.getElementById("btn");
+
+var isSending = false;
+
+btn.addEventListener("click", function() {
+
+  // すでに送信中なら何もしない
+  if (isSending === true) {
+    return;
+  }
+
+  isSending = true;
+
+  // ボタンを無効化
+  btn.disabled = true;
+  btn.textContent = "送信中...";
+
+  // 疑似送信（3秒）
+  setTimeout(function() {
+
+    alert("送信完了");
+
+    // 元に戻す
+    isSending = false;
+    btn.disabled = false;
+    btn.textContent = "送信";
+
+  }, 3000);
+
+});
+
+</script>
+
+</body>
+</html>

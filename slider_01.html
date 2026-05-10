@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>自動スライダー</title>
+
+<style>
+body {
+  margin: 0;
+  background: #111;
+}
+
+/* 外枠（左右80px） */
+.slider-wrap {
+  padding: 0 80px;
+  overflow: hidden;
+}
+
+/* スライド本体 */
+.slider {
+  display: flex;
+  animation: slide 16s infinite;
+}
+
+/* ここが重要 */
+.slide {
+  min-width: 100%; /* ← 1枚100% */
+  flex-shrink: 0;
+}
+
+.slide img {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.slide a {
+  display: block;
+}
+
+/* アニメーション（100%単位に変更） */
+@keyframes slide {
+  0%   { transform: translateX(0); }
+  20%  { transform: translateX(0); }
+
+  25%  { transform: translateX(-100%); }
+  45%  { transform: translateX(-100%); }
+
+  50%  { transform: translateX(-200%); }
+  70%  { transform: translateX(-200%); }
+
+  75%  { transform: translateX(-300%); }
+  95%  { transform: translateX(-300%); }
+
+  100% { transform: translateX(0); }
+}
+
+/* レスポンシブ */
+@media (max-width: 768px) {
+  .slider-wrap {
+    padding: 0 20px;
+  }
+
+  .slide img {
+    height: 250px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="slider-wrap">
+  <div class="slider">
+
+    <!-- 4枚 -->
+    <div class="slide">
+      <a href="#"><img src="https://picsum.photos/id/1015/1200/600"></a>
+    </div>
+
+    <div class="slide">
+      <a href="#"><img src="https://picsum.photos/id/1016/1200/600"></a>
+    </div>
+
+    <div class="slide">
+      <a href="#"><img src="https://picsum.photos/id/1025/1200/600"></a>
+    </div>
+
+    <div class="slide">
+      <a href="#"><img src="https://picsum.photos/id/1035/1200/600"></a>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

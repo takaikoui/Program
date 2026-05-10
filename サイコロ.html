@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<head>
+  <title>サイコロの目を降る</title>
+</head>
+
+<body>
+  <div>
+    <h1 id="answer">の目が出ました</h1>
+    <button id="button">ここを押す</button>
+  </div>
+  <script>
+  var answer = document.getElementById("answer")
+  var button = document.getElementById("button")
+    const x=[1,2,3,4,5,6]
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const r = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[r]] = [arr[r], arr[i]];
+      }
+    }
+    button.addEventListener("click", function() {
+
+     shuffle(x); // シャッフル
+
+     var result = x[0]; // 先頭を取り出す
+
+     answer.textContent = result + " の目が出ました";
+   });
+
+
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>レベルメーターUI</title>
+
+<style>
+body {
+  margin: 0;
+  background: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: sans-serif;
+}
+
+canvas {
+  background: white;
+}
+
+button {
+  position: absolute;
+  bottom: 30px;
+  padding: 10px 20px;
+  font-size: 16px;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="canvas" width="300" height="300"></canvas>
+<button onclick="next()">NEXT</button>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+// ステップ
+const levels = [10, 40, 80, 100];
+let index = 0;
+
+// ★データ（正しい値）
+let target = 10;
+
+// ★表示用（アニメ）
+let current = 0;
+
+function draw() {
+  ctx.clearRect(0, 0, 300, 300);
+
+  const cx = 150;
+  const cy = 150;
+  const r = 100;
+
+  // 下スタート
+  const start = Math.PI / 2;
+  const end = start + (Math.PI * 2 * current / 100);
+
+  // 円弧（アニメ）
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, start, end);
+
+  ctx.strokeStyle = "#4fc3f7";
+  ctx.lineWidth = 22;
+  ctx.lineCap = "butt";
+  ctx.stroke();
+
+  // ★ここが重要（正しい値を表示）
+  ctx.fillStyle = "#111";
+  ctx.font = "24px sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText(target + "%", cx, cy + 8);
+}
+
+// アニメーション
+function animate() {
+  current += (target - current) * 0.1;
+  draw();
+  requestAnimationFrame(animate);
+}
+
+// 次へ
+function next() {
+  if (index < levels.length - 1) {
+    index++;
+    target = levels[index];
+  }
+}
+
+// ★起動時アニメ（0 → 10）
+setTimeout(() => {
+  target = 10;
+}, 100);
+
+animate();
+</script>
+
+</body>
+</html>

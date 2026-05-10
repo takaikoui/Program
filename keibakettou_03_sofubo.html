@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>血統シミュレーター</title>
+<style>
+  body {
+    font-family: sans-serif;
+    text-align: center;
+    padding: 30px;
+  }
+  select, button {
+    margin: 5px;
+    font-size: 16px;
+    padding: 5px;
+  }
+  #result {
+    font-size: 40px;
+    margin-top: 20px;
+  }
+</style>
+</head>
+
+<body>
+
+<h1>4世代血統シミュレーター</h1>
+
+<h3>父</h3>
+<select id="father">
+  <option>栗毛</option>
+  <option>青鹿毛</option>
+  <option>鹿毛</option>
+</select>
+
+<h3>母</h3>
+<select id="mother">
+  <option>栗毛</option>
+  <option>青鹿毛</option>
+  <option>鹿毛</option>
+</select>
+
+<hr>
+
+<h3>父の父（祖父）</h3>
+<select id="fg">
+  <option>栗毛</option>
+  <option>青鹿毛</option>
+  <option>鹿毛</option>
+</select>
+
+<h3>父の母（祖母）</h3>
+<select id="fm">
+  <option>栗毛</option>
+  <option>青鹿毛</option>
+  <option>鹿毛</option>
+</select>
+
+<h3>母の父（祖父）</h3>
+<select id="mg">
+  <option>栗毛</option>
+  <option>青鹿毛</option>
+  <option>鹿毛</option>
+</select>
+
+<h3>母の母（祖母）</h3>
+<select id="mm">
+  <option>栗毛</option>
+  <option>青鹿毛</option>
+  <option>鹿毛</option>
+</select>
+
+<br>
+
+<button onclick="run()">生まれる！</button>
+
+<div id="result">？</div>
+
+<script>
+function getChildColor(father, mother, fg, fm, mg, mm) {
+  const baseColors = {
+    栗毛: 10,
+    青鹿毛: 30,
+    鹿毛: 40
+  };
+
+  const weights = { ...baseColors };
+
+  // 親（強い影響）
+  weights[father] += 30;
+  weights[mother] += 30;
+
+  // 祖父母（弱い影響）
+  weights[fg] += 10;
+  weights[fm] += 10;
+  weights[mg] += 10;
+  weights[mm] += 10;
+
+  const total = Object.values(weights).reduce((a, b) => a + b, 0);
+
+  let rand = Math.random() * total;
+
+  for (let color in weights) {
+    rand -= weights[color];
+    if (rand < 0) {
+      return color;
+    }
+  }
+}
+
+function run() {
+  const father = document.getElementById("father").value;
+  const mother = document.getElementById("mother").value;
+
+  const fg = document.getElementById("fg").value;
+  const fm = document.getElementById("fm").value;
+  const mg = document.getElementById("mg").value;
+  const mm = document.getElementById("mm").value;
+
+  const result = getChildColor(father, mother, fg, fm, mg, mm);
+
+  const out = document.getElementById("result");
+  out.innerText = result;
+
+  if (result === "栗毛") out.style.color = "orange";
+  if (result === "青鹿毛") out.style.color = "black";
+  if (result === "鹿毛") out.style.color = "brown";
+}
+</script>
+
+</body>
+</html>

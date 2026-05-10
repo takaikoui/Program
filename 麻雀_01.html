@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>1枚ツモゲーム</title>
+</head>
+
+<body>
+
+<h1>1枚ツモゲーム</h1>
+
+<div>あなた：<span id="meHand">-</span></div>
+<div>敵：<span id="youHand">-</span></div>
+
+<hr>
+
+<div>ツモ牌：<span id="draw">-</span></div>
+
+<h2 id="result">未開始</h2>
+
+<button id="btn">ツモ開始</button>
+
+<script>
+let started = false;
+let finished = false; // ★追加
+let meHand = 0;
+let youHand = 0;
+let deck = [];
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const r = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[r]] = [arr[r], arr[i]];
+  }
+}
+
+function initGame() {
+  const nums = [1,2,3,4,5,6,7,8,9];
+  shuffle(nums);
+
+  meHand = nums[0];
+  youHand = nums[1];
+
+  deck = [1,2,3,4,5,6,7,8,9];
+  shuffle(deck);
+
+  document.getElementById("meHand").textContent = meHand;
+  document.getElementById("youHand").textContent = youHand;
+
+  document.getElementById("result").textContent = "開始";
+
+  started = true;
+  finished = false; // ★リセット
+}
+
+function draw() {
+  if (finished) return; // ★ここで止める
+
+  if (!started) initGame();
+
+  if (deck.length === 0) {
+    document.getElementById("result").textContent = "山切れ";
+    finished = true;
+    return;
+  }
+
+  const tile = deck.shift();
+  document.getElementById("draw").textContent = tile;
+
+  if (tile === meHand) {
+    document.getElementById("result").textContent = "あなたツモ！勝ち！";
+    finished = true; // ★終了
+  } else if (tile === youHand) {
+    document.getElementById("result").textContent = "敵ツモ！負け！";
+    finished = true; // ★終了
+  } else {
+    document.getElementById("result").textContent = "続行";
+  }
+}
+
+document.getElementById("btn").addEventListener("click", draw);
+</script>
+
+</body>
+</html>

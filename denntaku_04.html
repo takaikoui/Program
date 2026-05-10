@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>電卓（完成版）</title>
+<style>
+  body {
+    text-align: center;
+    font-family: sans-serif;
+    padding: 20px;
+  }
+
+  input {
+    font-size: 24px;
+    width: 260px;
+    text-align: right;
+    margin-bottom: 10px;
+  }
+
+  button {
+    font-size: 20px;
+    width: 60px;
+    height: 50px;
+    margin: 5px;
+  }
+</style>
+</head>
+
+<body>
+
+<h2>電卓</h2>
+
+<input type="text" id="display" disabled>
+
+<br>
+
+<!-- 数字 -->
+<button class="num">1</button>
+<button class="num">2</button>
+<button class="num">3</button><br>
+
+<button class="num">4</button>
+<button class="num">5</button>
+<button class="num">6</button><br>
+
+<button class="num">7</button>
+<button class="num">8</button>
+<button class="num">9</button><br>
+
+<button class="num">0</button>
+
+<!-- 演算子 -->
+<button class="op">+</button>
+<button class="op">-</button>
+<button class="op">*</button>
+<button class="op">/</button>
+
+<br>
+
+<button id="equal">=</button>
+<button id="clear">C</button>
+
+<script>
+
+/* =======================
+   状態
+======================= */
+var current = "";
+var previous = "";
+var operator = null;
+var justCalculated = false; // ★計算直後フラグ
+
+/* =======================
+   表示更新（状態から生成）
+======================= */
+function updateDisplay() {
+  var display = "";
+
+  if (previous !== "") {
+    display = previous;
+  }
+
+  if (operator !== null) {
+    display = display + " " + operator;
+  }
+
+  if (current !== "") {
+    display = display + " " + current;
+  }
+
+  document.getElementById("display").value = display;
+}
+
+/* =======================
+   数字入力
+======================= */
+function inputNumber(num) {
+
+  // ★計算直後ならリセット
+  if (justCalculated === true) {
+    current = "";
+    justCalculated = false;
+  }
+
+  current = current + num;
+  updateDisplay();
+}
+
+/* =======================
+   演算子選択
+======================= */
+function selectOperator(op) {
+  if (current === "") return;
+
+  // 連続計算
+  if (previous !== "" && operator !== null) {
+    calculate();
+  }
+
+  operator = op;
+  previous = current;
+  current = "";
+
+  justCalculated = false;
+
+  updateDisplay();
+}
+
+/* =======================
+   計算処理
+======================= */
+function calculate() {
+  if (previous === "" || current === "" || operator === null) return;
+
+  var a = parseFloat(previous);
+  var b = parseFloat(current);
+
+  if (isNaN(a) || isNaN(b)) {
+    updateDisplay("エラー");
+    reset();
+    return;
+  }
+
+  var result;
+
+  switch (operator) {
+    case "+":
+      result = a + b;
+      break;
+
+    case "-":
+      result = a - b;
+      break;
+
+    case "*":
+      result = a * b;
+      break;
+
+    case "/":
+      if (b === 0) {
+        updateDisplay("エラー");
+        reset();
+        return;
+      }
+      result = a / b;
+      break;
+
+    default:
+      return;
+  }
+
+  current = result.toString();
+  previous = "";
+  operator = null;
+
+  justCalculated = true; // ★ここ重要
+
+  updateDisplay();
+}
+
+/* =======================
+   リセット
+======================= */
+function reset() {
+  current = "";
+  previous = "";
+  operator = null;
+  justCalculated = false;
+
+  updateDisplay();
+}
+
+/* =======================
+   イベント設定
+======================= */
+
+/* 数字 */
+var numButtons = document.querySelectorAll(".num");
+
+numButtons.forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    inputNumber(btn.textContent);
+  });
+});
+
+/* 演算子 */
+var opButtons = document.querySelectorAll(".op");
+
+opButtons.forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    selectOperator(btn.textContent);
+  });
+});
+
+/* = */
+document.getElementById("equal").addEventListener("click", function() {
+  calculate();
+});
+
+/* C */
+document.getElementById("clear").addEventListener("click", function() {
+  reset();
+});
+
+</script>
+
+</body>
+</html>

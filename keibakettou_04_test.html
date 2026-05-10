@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>毛色ランダム</title>
+
+<style>
+  body {
+    font-family: sans-serif;
+    text-align: center;
+    padding: 40px;
+  }
+
+  select, button {
+    font-size: 18px;
+    margin: 10px;
+    padding: 5px 10px;
+  }
+
+  #result {
+    font-size: 40px;
+    margin-top: 20px;
+  }
+</style>
+</head>
+
+<body>
+
+<h1>毛色2択ランダム</h1>
+
+<p>親1</p>
+<select id="p1">
+  <option>栗毛</option>
+  <option>青鹿毛</option>
+  <option>鹿毛</option>
+</select>
+
+<p>親2</p>
+<select id="p2">
+  <option>栗毛</option>
+  <option>青鹿毛</option>
+  <option>鹿毛</option>
+</select>
+
+<br>
+
+<button id="runBtn">生まれる</button>
+
+<div id="result">？</div>
+
+<script>
+const baseColors = {
+  栗毛: 10,
+  青鹿毛: 30,
+  鹿毛: 40
+};
+
+function getChild(p1, p2) {
+  const w1 = baseColors[p1];
+  const w2 = baseColors[p2];
+
+  const total = w1 + w2;
+  const rand = Math.random() * total;
+
+  if (rand < w1) {
+    return p1;
+  } else {
+    return p2;
+  }
+}
+
+function run() {
+  const p1 = document.getElementById("p1").value;
+  const p2 = document.getElementById("p2").value;
+
+  const result = getChild(p1, p2);
+
+  const out = document.getElementById("result");
+  out.innerText = result;
+
+  if (result === "栗毛") out.style.color = "orange";
+  if (result === "青鹿毛") out.style.color = "black";
+  if (result === "鹿毛") out.style.color = "brown";
+}
+
+// ボタンイベント（onclickなし）
+document.getElementById("runBtn")
+  .addEventListener("click", run);
+</script>
+
+</body>
+</html>

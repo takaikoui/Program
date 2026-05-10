@@ -1,0 +1,51 @@
+<!DOCTYPE HTML>
+<HTML>
+<HEAD>
+<title>たこ焼き表裏ゲーム</title>
+</HEAD>
+<body>
+<div>
+  <button class="takoyaki" value="first">生</button>
+  <button class="takoyaki" value="second">生</button>
+  <button class="takoyaki" value="third">生</button>
+  <p id="memo">作成中</p>
+</div>
+
+<script>
+var status = ["生","表","裏"];
+var btn = document.getElementsByClassName("takoyaki");
+var memo = document.getElementById("memo");
+
+for (let i = 0; i < btn.length; i++) {
+
+  btn[i].addEventListener("click", function() {
+
+    let current = this.textContent;
+
+    if (current === "生") {
+      this.textContent = "表";
+    } else if (current === "表") {
+      this.textContent = "裏";
+    } else if (current === "裏") {
+      return;
+    }
+
+    // ★ここに入れるのが重要！
+    let allDone = true;
+    for (let j = 0; j < btn.length; j++) {
+      if (btn[j].textContent !== "裏") {
+        allDone = false;
+        break;
+      }
+    }
+
+    if (allDone) {
+      memo.textContent = "できあがり！";
+    }
+
+  });
+}
+</script>
+
+  </body>
+  </HTML>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>毛色シミュレーター</title>
+
+<style>
+  body {
+    font-family: sans-serif;
+    text-align: center;
+    padding: 40px;
+  }
+
+  select, button {
+    font-size: 18px;
+    margin: 10px;
+    padding: 5px 10px;
+  }
+
+  #result {
+    font-size: 40px;
+    margin-top: 20px;
+    font-weight: bold;
+  }
+</style>
+</head>
+
+<body>
+
+<h1>毛色シミュレーター</h1>
+
+<p>母</p>
+<select id="mother">
+  <option value="栗毛">栗毛</option>
+  <option value="青鹿毛">青鹿毛</option>
+  <option value="鹿毛">鹿毛</option>
+</select>
+
+<p>父</p>
+<select id="father">
+  <option value="栗毛">栗毛</option>
+  <option value="青鹿毛">青鹿毛</option>
+  <option value="鹿毛">鹿毛</option>
+</select>
+
+<br>
+
+<button id="btn">生まれる！</button>
+
+<div id="result">？</div>
+
+<script>
+//weignt
+const weight = {
+  "栗毛": 10,
+  "鹿毛": 30,
+  "青鹿毛": 60
+};
+//parents
+
+var button = document.getElementById('btn');
+var result = document.getElementById('result');
+
+button.addEventListener("pointerdown", function() {
+  var mother = document.getElementById('mother').value;
+  var father = document.getElementById('father').value;
+  var total = weight[mother]+weight[father];
+  const rand = Math.random() * total;
+
+  if (rand < weight[mother]) {
+    child = mother;
+    result.textContent = child;
+  } else {
+    child = father;
+    result.textContent = child;
+  }
+
+
+})
+
+</script>
+
+</body>
+</html>

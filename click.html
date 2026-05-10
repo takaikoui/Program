@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>クリック数出る</title>
+</head>
+
+<body>
+  <h1 id="title">ここにクリック数が出る</h1>
+
+  <button id="btnp">プラスになる</button>
+  <button id="btnm">マイナスになる</button>
+
+  <script>
+    var num = 0; // ★外に出す
+
+    var buttonp = document.getElementById("btnp");
+    var buttonm = document.getElementById("btnm");
+    var title = document.getElementById("title");
+
+    buttonp.addEventListener("click", function() {
+      num = num + 1;
+      title.textContent = num;
+    });
+    buttonm.addEventListener ("click",function(){
+      num = num - 1;
+      title.textContent = num;
+    });
+  </script>
+
+</body>
+</html>

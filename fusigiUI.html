@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<HTML>
+<HEAD>
+<title>不思議UI</title>
+<style>
+#box {
+  position: fixed;
+  top: 50%;
+  left: -200px; /* 最初は画面外に隠す */
+  transform: translateY(-50%);
+  background: orange;
+  padding: 10px;
+  transition: 0.3s;
+}
+
+/* 表示状態 */
+#box.show {
+  left: 20px; /* スライドしてくる位置 */
+}
+</style>
+</HEAD>
+
+<body style="height:2000px;">
+<p>スクロールせよ</p>
+<div id="box">
+  左から出てくる
+</div>
+
+<script>
+var box = document.getElementById("box");
+
+window.addEventListener("scroll", function() {
+  let scrollY = window.scrollY;
+
+  if (scrollY >= 1000) {
+    box.classList.add("show");
+  } else {
+    box.classList.remove("show");
+  }
+});
+</script>
+
+</body>
+</HTML>
