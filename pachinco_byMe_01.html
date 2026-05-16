@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <head>
+    <tutle>連打して20回目で当たりかはずれがでてcsvにおとします</tytle>
+    <meta charset="UTF-8">
+    <style>
+      .rendaClass {
+        display: block;
+        width: 200px;
+        height: 30px;
+        text-align: center;
+        vertical-align: middle;
+      }
+    </style>
+</head>
+<body>
+  <p>ルール：連打して20回目で当たりかはずれがでます</p>
+  <p id="result">ここに結果がでるよ</p>
+  <button id="renda" class="rendaClass">連打せよ！！</button>
+  <script>
+    var result = document.getElementById("result");
+    var renda = document.getElementById("renda");
+
+    var kaisuu = 0;
+
+
+    renda.addEventListener("pointerdown",function(){
+      renda.textContent="";
+      kaisuu++ ;
+      if(kaisuu<20){
+        result.textContent = kaisuu + "回目...";
+      }else if (kaisuu === 20) {
+        if (Math.random() < 0.5) {
+          result.textContent = "あたり";
+          return;
+        }else {
+          result.textContent="はずれ";
+          return;
+        }
+      }
+    })
+    renda.addEventListener("pointerup",function(){
+      renda.textContent="連打せよ！！";
+    })
+  </script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>カロリー計算</title>
+</head>
+<body>
+  <div id="food-container">
+    <!-- labelのテキストを基準に計算するようにします -->
+    <input type="checkbox" id="sozai01" class="foods">
+    <label id="label-sozai01" for="sozai01">ピーマン</label>
+
+    <input type="checkbox" id="sozai02" class="foods">
+    <label id="label-sozai02" for="sozai02">イワシ</label>
+
+    <input type="checkbox" id="sozai03" class="foods">
+    <label id="label-sozai03" for="sozai03">牛肉</label>
+
+    <p id="button" style="background:#eee; cursor:pointer; padding:10px; display:inline-block;">
+      計算する
+    </p>
+    <p id="weight">合計: 0 kcal</p>
+  </div>
+
+  <script>
+    // 1. オブジェクトを正しく定義（= と : と , を使う）
+    const eiyouso = {
+      "ピーマン": 10,
+      "イワシ": 50,
+      "牛肉": 100
+    };
+
+    const btn = document.getElementById("button");
+    const resultDisplay = document.getElementById("weight");
+    const foodsArray = document.getElementsByClassName("foods");
+
+    btn.addEventListener("pointerdown", function() {
+      let total = 0;
+
+      for (let i = 0; i < foodsArray.length; i++) {
+        if (foodsArray[i].checked) {
+          // 2. チェックされた項目の「隣にあるlabelの文字」を取得
+          // 例: "ピーマン" という文字を取り出す
+          const foodName = document.querySelector(`label[for="${foodsArray[i].id}"]`).textContent;
+          console.log(foodName);
+
+          // 3. オブジェクトからその名前のカロリーを取り出して足す
+          total += eiyouso[foodName];
+        }
+      }
+
+      resultDisplay.innerText = "合計: " + total + " kcal";
+    });
+  </script>
+</body>
+</html>

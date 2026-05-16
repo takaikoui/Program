@@ -1,21 +1,35 @@
 <!DOCTYPE html>
-<hrad>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
   <title>ランダム数字ゲーム</title>
 </head>
 <body>
   <h1 id="number">ここに数字が出ます</h1>
   <button id="random">ここを押すと数字が出ます</button>
+
   <script>
-  var number = document.getElementById("number");
-  var random = document.getElementById("random");
+    var numberText = document.getElementById("number");
+    var randomBtn = document.getElementById("random");
 
-function ramdomnumber(){
-  var num = [0,2,3,4,5,6,7,8,9];
-  for (let i = arr.length-1,i > 0,--i;) {
-    cocnst r =Math.floor(Math.random)*i+1;
-  }
-}
+    function ramdomnumber() {
+      var num = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
+      // シャッフルのアルゴリズム（フィッシャー・イェーツ）
+      for (let i = num.length - 1; i > 0; i--) {
+        const r = Math.floor(Math.random() * (i + 1));
+        // 数字を入れ替える
+        var tmp = num[i];
+        num[i] = num[r];
+        num[r] = tmp;
+      }
+
+      // シャッフルされた配列の最初の数字を表示
+      numberText.textContent = num[0];
+    }
+
+    // ボタンをクリックしたときに関数を実行する
+    randomBtn.addEventListener("click", ramdomnumber);
   </script>
 </body>
 </html>

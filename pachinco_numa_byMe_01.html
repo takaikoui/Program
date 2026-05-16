@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>長押しカウンター</title>
+</head>
+<body>
+<h1>パチンコ沼突破で一億円</h1>
+    <div id="counter">0</div>
+    <div></div>
+    <button id="btn">長押しでカウント</button>
+
+    <h2>一条の声</h2>
+    <p id="ichijo">Loading...</p>
+
+    <h2>かかった金</h2>
+    <p id="money">0</p>
+
+    <h2>初めの役物通過</h2>
+    <p id="first">0</p>
+    <h2>次のクルーン突破</h2>
+    <p id="second">0</p>
+    <h2>最後のクルーン突破</h2>
+    <p id="third">0</p>
+
+
+    <script>
+        let count = 0;
+        let timer = null;
+        const interval = 50; // 0.05秒ごとにカウントアップ
+
+        // レート設定
+        let rate = 4000;
+        let moneyRate = 0;
+        let firstYakumonoOdds = 50; // 初めの役物：50分の1
+
+        // それぞれの通過数を数える変数
+        let firstPassCount = 0;
+        let secondPassCount = 0;
+        let thirdPassCount = 0;
+
+        // ゲームの状態を管理する変数（フラグ）
+        let isCleared = false;   // 大当たりしたらtrue
+        let saidFirst = false;   // 「第一のクルーンが…」を言ったらtrue
+        let saidSecond = false;  // 「第二のクルーンが…」を言ったらtrue
+
+        // 画面のパーツ（HTML要素）を取得
+        const counterEl = document.getElementById('counter');
+        const btn = document.getElementById('btn');
+        const money = document.getElementById('money');
+        const firstEl = document.getElementById('first');
+        const secondEl = document.getElementById('second');
+        const thirdEl = document.getElementById('third');
+        const ichijoEl = document.getElementById('ichijo');
+
+        // 役物の確率設定（あなたのコードの変数名を採用）
+        var firstYakumono = 50;
+        var secondYakumonoOss = 3; // 次のクルーン：3分の1
+        var thirdYakumono = 5;     // 最後のクルーン：5分の1
+
+        // 一条のセリフ初期化（即時関数で1回だけ実行）
+        (() => {
+            ichijoEl.textContent = "ふっふっふ……沼へようこそ……。";
+        })();
+
+
+        // カウント開始
+        function start() {
+            if (isCleared) return; // すでにクリアしてたら動かさない
+            if (timer !== null) return;
+            timer = setInterval(() => {
+                count++;
+                moneyRate += rate;
+                counterEl.textContent = count;
+                money.textContent = moneyRate.toLocaleString() + "円";
+                checkFirstYakumono();
+            }, interval);
+        }
+
+        // カウント停止
+        function stop() {
+            if (timer !== null) {
+                clearInterval(timer);
+                timer = null;
+            }
+        }
+
+        // 【1. 初めの役物】
+        function checkFirstYakumono() {
+          if (isCleared) return;
+
+          if (Math.random() * firstYakumonoOdds < 1) {
+              firstPassCount++;
+              firstEl.textContent = firstPassCount;
+              checkSecondCroon(); // 突破したら第二へ
+          }
+        }
+
+        // 【2. 次のクルーン（手前）】
+        function checkSecondCroon() {
+            if (isCleared) return;
+
+            // 「第一のクルーンが…」のセリフを1回だけ言わせる（使い捨て）
+            if (!saidFirst) {
+                ichijoEl.textContent = "第一のクルーンが・・・";
+                saidFirst = true;
+            }
+
+            if (Math.random() * secondYakumonoOss < 1) {
+                secondPassCount++;
+                secondEl.textContent = secondPassCount;
+                checkThirdCroon(); // 突破したら第三へ
+            }
+        }
+
+        // 【3. 最後のクルーン（奥）】
+        function checkThirdCroon() {
+            if (isCleared) return;
+
+            // 「第二のクルーンが…」のセリフを1回だけ言わせる（使い捨て）
+            if (!saidSecond) {
+                ichijoEl.textContent = "第二のクルーンが・・・";
+                saidSecond = true;
+            }
+
+            if (Math.random() * thirdYakumono < 1) {
+                thirdPassCount++;
+                thirdEl.textContent = thirdPassCount;
+
+                isCleared = true; // クリア状態にする（これ以降、セリフの上書きを完全ブロック）
+
+                // 大当たり演出
+                ichijoEl.textContent = "バカな…！あり得ん…！この沼が破られるなど…！！一億円獲得…！！";
+                ichijoEl.style.color = "red";
+                ichijoEl.style.fontWeight = "bold";
+
+                stop(); // タイマーを止める
+            }
+        }
+
+        // --- マウスイベント（PC用） ---
+        btn.addEventListener('mousedown', start);
+        btn.addEventListener('mouseup', stop);
+        btn.addEventListener('mouseleave', stop);
+
+        // --- タッチイベント（スマホ用） ---
+        btn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            start();
+        });
+        btn.addEventListener('touchend', stop);
+        btn.addEventListener('touchcancel', stop);
+
+    </script>
+</body>
+</html>
