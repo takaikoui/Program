@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<title>サイコロで楽しもう！</title>
+</head>
+<body>
+	<p id="result">ここに結果が出るよ！</p>
+	<button id="btn">サイコロを振る</button>	
+	
+	<label>ここからサイコロの面をえらべるよ！</label>
+	<select id="diceNunber">
+		<option id="NaN" value="6">選択してね（6面）</option> <!-- value="6" を仕込んでおく -->
+		<option id="fourSide" value="4">4</option>
+		<option id="sixSides" value="6">6</option>
+		<option id="eightSide" value="8">8</option>
+	</select>
+
+	<script>	
+		var result = document.getElementById("result");
+		var btn = document.getElementById("btn");
+		var diceNunber = document.getElementById("diceNunber"); // 外に出しておくとスッキリ
+
+		btn.addEventListener("pointerdown", function(){
+			// 1. セレクトボックスの value（文字）を、安全に「数字」に変換して取得！
+			var diceMax = Number(diceNunber.value); 
+
+			// 2. ランダムな数字を計算
+			var randomNumber = Math.floor(Math.random() * diceMax) + 1;	
+			
+			// 3. 画面に結果を表示
+			if (randomNumber === 1) {
+				// バイブレーション機能が使えるブラウザかチェック
+				if (navigator.vibrate) {
+					navigator.vibrate(0); // 一度バイブをクリア（連打対策）
+					navigator.vibrate([200, 100, 200]); // ぶる、ぶるっと震わせる
+				}
+				result.textContent = diceMax + "面ダイスで「1」が出た！ぶるぶる！";
+			} else {
+				result.textContent = diceMax + "面ダイスを振って「" + randomNumber + "」が出たよ！";
+			}
+		});
+	</script>
+</body>
+</html>

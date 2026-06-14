@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>電卓（カッコ完全対応版）</title>
+<style>
+  body {
+    text-align: center;
+    font-family: sans-serif;
+    padding: 20px;
+  }
+
+  input {
+    font-size: 24px;
+    width: 260px;
+    text-align: right;
+    margin-bottom: 10px;
+    padding: 5px;
+  }
+
+  button {
+    font-size: 20px;
+    width: 60px;
+    height: 50px;
+    margin: 5px;
+    cursor: pointer;
+  }
+</style>
+</head>
+
+<body>
+
+<h2>電卓</h2>
+
+<!-- 画面には入力された数式がそのまま表示されます -->
+<input type="text" id="display" value="0" disabled>
+
+<br>
+
+<button class="btn" id="ka_open">(</button>
+<button class="btn" id="ka_close">)</button>
+<button class="btn" id="percent">%</button>
+<button class="btn" id="clear" >AC</button><br>
+
+<button class="btn num">7</button>
+<button class="btn num">8</button>
+<button class="btn num">9</button>
+<button class="btn op">/</button><br>
+
+<button class="btn num">4</button>
+<button class="btn num">5</button>
+<button class="btn num">6</button>
+<button class="btn op">*</button><br>
+
+<button class="btn num">1</button>
+<button class="btn num">2</button>
+<button class="btn num">3</button>
+<button class="btn op">-</button><br>
+
+<button class="btn num">0</button>
+<button class="btn">.</button>
+<button class="btn" id="equal" >=</button>
+<button class="btn op">+</button><br>
+
+<!-- 6段目：【新設】上のボタンと位置を揃えるために、左側に3つ空のボタン（またはダミー）を置きます -->
+<button class="btn" style="visibility: hidden;"> </button>
+<button class="btn" style="visibility: hidden;"> </button>
+<button class="btn" style="visibility: hidden;"> </button>
+<button class="btn" id="backspace">⌫</button> <!-- 💡 これで「＋」の真下にピッタリ来ます！ -->
+
+<script>
+var display = document.getElementById("display");
+
+if(display === ""){
+  display.value = "0";
+}
+var op = document.getElementsByClassName("op");
+
+for (var i = 0; i < op.length; i++) {
+  
+  op[i].addEventListener("pointerdown", function(event) {
+    var clickedOp = event.target.textContent;
+
+    // 1. 画面が「0」かつ「マイナス」なら「-」にする
+    if (display.value === "0" && clickedOp === "-") {
+      display.value = clickedOp; 
+      
+    // 2. それ以外の「0」のときは弾く
+    } else if (display.value === "0") {
+      return;
+      
+    // 3. 画面がすでに「-」だけのときも弾く
+    } else if (display.value === "-") {
+      return;
+      
+    // 4. 【新機能】すでに演算子が最後にある場合
+    } else {
+      // 画面の一番最後の1文字を切り出す
+      var lastChar = display.value.slice(-1);
+      
+      // もし最後の文字が「+, -, *, /」のいずれかだったら
+      if (lastChar === "+" || lastChar === "-" || lastChar === "*" || lastChar === "/") {
+        
+        // 💡 パターンA：新しい演算子に「置き換える」場合（おすすめ）
+        // 一番最後の文字を消して、新しい演算子を合体させる
+        display.value = display.value.slice(0, -1) + clickedOp;
+        
+        /* 💡 パターンB：単に「無視する（++にさせない）」にしたい場合は、
+           上の1行を消して、ここに「return;」とだけ書けばOKです！ */
+
+      } else {
+        // 最後の文字が数字なら、普通に後ろに合体させる
+        display.value += clickedOp; 
+      }
+    }
+  });
+}
+
+
+//数字を扱うとき
+    var num = document.getElementsByClassName("num");
+
+    for (var i = 0; i < num.length; i++) {
+      num[i].addEventListener ("pointerdown",function(){
+        var numContent = this.textContent;
+        if(display.value === "0"){
+          display.value = numContent;
+        }else{
+          display.value += numContent;
+          }
+        
+      })
+    }
+
+
+//一文字消すとき
+    var backspace = document.getElementById("backspace");
+
+    backspace.addEventListener("pointerdown",function(){
+      display.value = display.value.slice(0,-1);
+      if (display.value === "") {
+    display.value = "0";
+  }
+    });
+
+
+//計算
+    var equal = document.getElementById("equal");
+    equal.addEventListener("pointerdown",function(){
+      try {
+    // 💡 evalの代わりに「安全な計算機」をその場で作って実行する
+    // 画面の「1+2」などの数式を、安全に数式として評価（計算）してくれます
+    var result = new Function('return ' + display.value)();
+    
+    // 計算結果が有効な数字かどうかチェック
+    if (result !== undefined && !isNaN(result)) {
+      display.value = result;
+    } else {
+      display.value = "Error";
+    }
+    
+  } catch (error) {
+    // カッコの閉じ忘れや演算子の連続などのエラー対策
+    display.value = "Error";
+  }
+    });
+
+
+
+</script>
+
+</body>
+</html>

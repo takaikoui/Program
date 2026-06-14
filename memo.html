@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>メモアプリ</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    font-family:sans-serif;
+    background:#f4f4f4;
+    padding:40px;
+}
+
+.container{
+    max-width:600px;
+    margin:auto;
+    background:#fff;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+
+h1{
+    text-align:center;
+}
+
+.input-area{
+    display:flex;
+    gap:10px;
+    margin-bottom:20px;
+}
+
+#memoInput{
+    flex:1;
+    padding:10px;
+}
+
+button{
+    padding:10px 15px;
+    cursor:pointer;
+}
+
+.memo{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px;
+    border:1px solid #ddd;
+    margin-bottom:10px;
+    border-radius:5px;
+}
+
+.memo-text{
+    flex:1;
+}
+
+.actions{
+    display:flex;
+    gap:5px;
+}
+
+.edit{
+    background:#ffc107;
+    border:none;
+}
+
+.delete{
+    background:#dc3545;
+    color:white;
+    border:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>メモアプリ</h1>
+
+    <div class="input-area">
+        <input type="text" id="memoInput" placeholder="メモを入力 (Shift + Enter で追加)">
+        <button id="addBtn">追加</button>
+    </div>
+
+    <div id="memoList"></div>
+</div>
+
+<script>
+const memoInput = document.getElementById("memoInput");
+const addBtn = document.getElementById("addBtn");
+const memoList = document.getElementById("memoList");
+
+let memos = JSON.parse(localStorage.getItem("memos")) || [];
+
+// データの保存
+function saveMemos() {
+    localStorage.setItem("memos", JSON.stringify(memos));
+}
+
+// 画面の更新表示（innerHTMLを完全排除）
+function renderMemos() {
+    // 古い要素をクリア
+    while (memoList.firstChild) {
+        memoList.removeChild(memoList.firstChild);
+    }
+
+    memos.forEach((memo, index) => {
+        // メモ全体の親要素
+        const memoDiv = document.createElement("div");
+        memoDiv.className = "memo";
+
+        // メモテキスト部分
+        const textSpan = document.createElement("span");
+        textSpan.className = "memo-text";
+        textSpan.textContent = memo; // 安全にテキストを挿入
+
+        // ボタンの親要素
+        const actionsDiv = document.createElement("div");
+        actionsDiv.className = "actions";
+
+        // 編集ボタン
+        const editBtn = document.createElement("button");
+        editBtn.className = "edit";
+        editBtn.textContent = "編集";
+        editBtn.dataset.index = index;
+
+        // 削除ボタン
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "delete";
+        deleteBtn.textContent = "削除";
+        deleteBtn.dataset.index = index;
+
+        // 要素を組み立てる
+        actionsDiv.appendChild(editBtn);
+        actionsDiv.appendChild(deleteBtn);
+        
+        memoDiv.appendChild(textSpan);
+        memoDiv.appendChild(actionsDiv);
+
+        memoList.appendChild(memoDiv);
+    });
+}
+
+// メモを追加する共通関数
+function addMemo() {
+    const text = memoInput.value.trim();
+    if(text === "") return;
+
+    memos.push(text);
+    saveMemos();
+    renderMemos();
+    memoInput.value = "";
+}
+
+// ボタンクリックで追加
+addBtn.addEventListener("click", addMemo);
+
+// Shift + Enter キー入力で追加
+memoInput.addEventListener("keydown", (e) => {
+    if (e.shiftKey && e.key === "Enter" && !e.isComposing) {
+        e.preventDefault(); 
+        addMemo();
+    }
+});
+
+// 編集・削除イベント（イベントデリゲーション）
+memoList.addEventListener("click", (e) => {
+    if (!e.target.dataset.index) return;
+    
+    const index = Number(e.target.dataset.index);
+
+    // 削除処理
+    if(e.target.classList.contains("delete")) {
+        memos.splice(index, 1);
+        saveMemos();
+        renderMemos();
+    }
+
+    // 編集処理
+    if(e.target.classList.contains("edit")) {
+        const newText = prompt("メモを編集", memos[index]);
+
+        if(newText !== null && newText.trim() !== "") {
+            memos[index] = newText.trim();
+            saveMemos();
+            renderMemos();
+        }
+    }
+});
+
+// 初期表示
+renderMemos();
+</script>
+
+</body>
+</html>

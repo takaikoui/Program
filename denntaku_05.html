@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>電卓（カッコ完全対応版）</title>
+<style>
+  body {
+    text-align: center;
+    font-family: sans-serif;
+    padding: 20px;
+  }
+
+  input {
+    font-size: 24px;
+    width: 260px;
+    text-align: right;
+    margin-bottom: 10px;
+    padding: 5px;
+  }
+
+  button {
+    font-size: 20px;
+    width: 60px;
+    height: 50px;
+    margin: 5px;
+    cursor: pointer;
+  }
+</style>
+</head>
+
+<body>
+
+<h2>電卓</h2>
+
+<!-- 画面には入力された数式がそのまま表示されます -->
+<input type="text" id="display" value="0" disabled>
+
+<br>
+
+<button class="btn" id="ka_open">(</button>
+<button class="btn" id="ka_close">)</button>
+<button class="btn" id="percent">%</button>
+<button id="clear">AC</button><br>
+
+<button class="btn num">7</button>
+<button class="btn num">8</button>
+<button class="btn num">9</button>
+<button class="btn op">/</button><br>
+
+<button class="btn num">4</button>
+<button class="btn num">5</button>
+<button class="btn num">6</button>
+<button class="btn op">*</button><br>
+
+<button class="btn num">1</button>
+<button class="btn num">2</button>
+<button class="btn num">3</button>
+<button class="btn op">-</button><br>
+
+<button class="btn num">0</button>
+<button class="btn">.</button>
+<button id="equal">=</button>
+<button class="btn op">+</button>
+
+<script>
+/* =======================
+   状態管理
+======================= */
+// 画面に表示する、ユーザーが見る数式文字列
+var formula = "";
+var justCalculated = false;
+
+/* =======================
+   表示更新
+======================= */
+function updateDisplay(message) {
+  var displayEl = document.getElementById("display");
+  
+  // エラーメッセージがある場合は、それをそのまま表示して終了
+  if (message) {
+    displayEl.value = message;
+    return;
+  }
+
+  // 【修正部分】if文で分かりやすく書き直しました
+  if (formula === "") {
+    displayEl.value = "0";      // 数式が空っぽなら「0」を表示
+  } else {
+    displayEl.value = formula;  // 数式が入っていれば、その数式を表示
+  }
+}
+
+/* =======================
+   文字の入力処理
+======================= */
+function inputChar(char) {
+  // 計算直後に数字やカッコ(が押されたら数式をクリア
+  if (justCalculated) {
+    if (!isNaN(char) || char === "." || char === "(") {
+      formula = "";
+    }
+    justCalculated = false;
+  }
+
+  // 最初の「0」の過剰な連続を防ぐ
+  if (formula === "0" && !isNaN(char)) {
+    formula = char;
+  } else {
+    formula = formula + char;
+  }
+
+  updateDisplay();
+}
+
+/* =======================
+   計算処理（カッコ対応）
+======================= */
+function calculate() {
+  if (formula === "") return;
+
+  try {
+    // 1. パーセント（%）の処理を簡易置換（例: 5% -> 5/100）
+    var targetFormula = formula.replace(/%/g, "/100");
+
+    // 2. 数式の安全性をチェック（数字、演算子、カッコ、ドット以外を排除）
+    if (!/^[0-9\+\-\*\/\(\)\.\s]+$/.test(targetFormula)) {
+      throw new Error("不正な文字");
+    }
+
+    // 3. カッコの左右の数が合っているか簡易チェック
+    var openCount = (targetFormula.match(/\(/g) || []).length;
+    var closeCount = (targetFormula.match(/\)/g) || []).length;
+    if (openCount !== closeCount) {
+      throw new Error("カッコ不一致");
+    }
+
+    // 4. 文字列の計算を実行（JavaScriptのFunctionオブジェクトを使用）
+    // 安全に計算を行うための仕組みです
+    var calcFunc = new Function("return " + targetFormula);
+    var result = calcFunc();
+
+    // 5. 結果が有効な数値かチェック
+    if (result === Infinity || result === -Infinity) {
+      updateDisplay("ゼロ除算エラー");
+      justCalculated = true;
+      return;
+    }
+    if (isNaN(result)) {
+      throw new Error("計算不能");
+    }
+
+    // 浮動小数点の誤差を綺麗にして文字列に変換
+    formula = Number(result.toPrecision(12)).toString();
+    justCalculated = true;
+
+  } catch (error) {
+    updateDisplay("エラー");
+    formula = "";
+    justCalculated = true;
+    return;
+  }
+
+  updateDisplay();
+}
+
+/* =======================
+   リセット
+======================= */
+function reset() {
+  formula = "";
+  justCalculated = false;
+  updateDisplay();
+}
+
+/* =======================
+   イベントリスナー設定
+======================= */
+
+// すべてのボタンの入力をテキストとしてそのまま数式に追加していく形にします
+document.querySelectorAll(".btn").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    inputChar(btn.textContent);
+  });
+});
+
+/* イコール */
+document.getElementById("equal").addEventListener("click", function() {
+  calculate();
+});
+
+/* クリア（AC） */
+document.getElementById("clear").addEventListener("click", function() {
+  reset();
+});
+
+</script>
+
+</body>
+</html>

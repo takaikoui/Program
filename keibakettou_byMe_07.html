@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>毛色シミュレーター</title>
+
+<style>
+  body {
+    font-family: sans-serif;
+    text-align: center;
+    padding: 40px;
+  }
+
+  select, button {
+    font-size: 18px;
+    margin: 10px;
+    padding: 5px 10px;
+  }
+
+  #result {
+    font-size: 20px;
+    margin-top: 20px;
+    font-weight: bold;
+  }
+</style>
+</head>
+
+<body>
+
+<h1>毛色シミュレーター</h1>
+
+<p>母</p>
+<select id="mother">
+  <option id="mother001" class="horses">ブラックサンダー</option>
+  <option id="mother002" class="horses">サンダーボルト</option>
+  <option id="mother003" class="horses">メイフラワー</option>
+</select>
+
+<p>父</p>
+<select id="father">
+  <option id="father001" class="horses">ディープサンダー</option>
+  <option id="father002" class="horses">テディベア</option>
+  <option id="father003" class="horses">タイガーボルト</option>
+</select>
+
+
+<button id="btn">生まれる！</button>
+
+<div id="result">？</div>
+<div id="result02"></div>
+
+<script>
+var coatColor = {"栗毛": 10, "鹿毛": 40, "青鹿毛": 30};
+var hasirikataBase = {"逃げ": 25, "先行": 25, "差し": 25, "追い": 25};
+var temperBase = {"激しい":33, "冷静":33, "臆病":33};
+//weignt
+const weightMother = {
+    "ブラックサンダー": { power: 90, speed: 70, temper: "激しい",coat:"栗毛",hasirikata:"逃げ", weight: 10 },
+    "サンダーボルト":   { power: 75, speed: 95, temper: "冷静",coat:"鹿毛", hasirikata:"先行",weight: 30 },
+    "メイフラワー":     { power: 60, speed: 80, temper: "臆病",coat:"青鹿毛",hasirikata:"差し",weight: 60 },
+};
+const weightFather = {
+    "ディープサンダー": { power: 90, speed: 70, temper: "激しい",coat:"栗毛",hasirikata:"逃げ", weight: 10 },
+    "テディベア":   { power: 75, speed: 95, temper: "冷静",coat:"鹿毛",hasirikata:"差し", weight: 30 },
+    "タイガーボルト":     { power: 60, speed: 80, temper: "臆病",coat:"青鹿毛",hasirikata:"追い", weight: 60 },
+};
+//parents
+
+var button = document.getElementById('btn');
+var result = document.getElementById('result');
+
+button.addEventListener("pointerdown", function() {
+  var mother = document.getElementById('mother').value;
+  var father = document.getElementById('father').value;
+  
+  var motherData = weightMother[mother];
+  var fatherData = weightFather[father];
+
+  var speedRandom = Math.floor(Math.random() * 31)-15;
+  var powerRandom = Math.floor(Math.random() * 31)-15;
+
+//毛色のランダム
+  var motherCoatRandom = coatColor[motherData.coat];
+  var fatherCoatRandom = coatColor[fatherData.coat];
+  var coatRandom = motherCoatRandom + fatherCoatRandom;
+  var childCoat = "";
+  var diceCoat = Math.random() * coatRandom;
+  if ( diceCoat < motherCoatRandom) {
+    childCoat = motherData.coat;
+  }
+  else {
+    childCoat = fatherData.coat;
+  }
+  
+  // 走り方のランダム（親に関係なく、4つの選択肢から完全にランダム）
+var keysHasirikata = Object.keys(hasirikataBase); // ["逃げ", "先行", "差し", "追い"] というリストを作る
+var childHasirikata = keysHasirikata[Math.floor(Math.random() * keysHasirikata.length)];
+
+// 性格のランダム（親に関係なく、3つの選択肢から完全にランダム）
+var keysTemper = Object.keys(temperBase); // ["激しい", "冷静", "臆病"] というリストを作る
+var childTemper = keysTemper[Math.floor(Math.random() * keysTemper.length)];
+
+  var childData = {
+    speed : Math.floor((motherData.speed + fatherData.speed) / 2) + speedRandom,
+    power : Math.floor((motherData.power + fatherData.power) / 2) + powerRandom,
+    coatColor : childCoat,
+    hasirikataBase : childHasirikata, // ←追加！
+    temperBase : childTemper          // ←追加！
+  };
+
+  // 最後の一行です！
+  result.textContent = "仔馬誕生！ 毛色:" + childData.coatColor + " / 脚質:" + childData.hasirikataBase + " / 性格:" + childData.temperBase + " / スピード:" + childData.speed + " / パワー:" + childData.power;
+})
+
+</script>
+
+</body>
+</html>

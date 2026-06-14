@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+
+
+<html lang = "ja">
+	
+<head>
+	<meta charset="UTF-8">
+	<title>サイコロで楽しもう！</title>
+</head>
+<body>
+	<p id="result">ここに結果が出るよ！</p>
+	<button id="btn">サイコロを降る</button>	
+	
+	<label>ここからサイコロの面をえらべるよ！</label>
+	<select id="diceNunber">
+		<option id= "NaN"></option>
+		<option id= "fourSide">4</option>
+		<option id="sixSides">6</option>
+		<option id="eightSide">8</option>
+	</select>
+
+	<script>	
+
+			var result = document.getElementById("result");
+			var btn = document.getElementById("btn");
+			
+			
+			btn.addEventListener ("pointerdown",function(){
+				var diceNunber = document.getElementById("diceNunber");
+				var selectedIndex = diceNunber.selectedIndex;
+				var selectedId = diceNunber.options[selectedIndex].id;
+			
+			var diceMax = 6; // デフォルトは6面にしておく
+				// サイコロの種類を決める
+			if (selectedId === "fourSide") {
+				diceMax = diceNunber.value;
+			} else if (selectedId === "sixSides") {
+				diceMax = diceNunber.value;
+			} else if (selectedId === "eightSide") {
+				diceMax = diceNunber.value;
+			} else if (selectedId === "NaN") {
+				diceMax = 6; 
+			}
+			console.log(diceMax);
+				
+
+				var randomNumber = Math.floor(Math.random() * diceMax) + 1;	
+				result.textContent = diceMax + "面ダイスを振って「" + randomNumber + "」が出たよ！";
+			});
+
+
+
+
+	</script>
+</body>
+
+</html>

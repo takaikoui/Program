@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>広告表示</title>
+	<style>
+	</style>
+</head>
+<body>
+	<div id="explanation">
+		<p>下のボタンを押すとランダムで広告が流れます。</p>
+	</div>
+	<div id="operation">
+		<button id="button_watch" id="disable">広告を見る</button>
+	</div>
+	<div>
+		<span id ="timer">ここに秒数が現れます。</span>
+		<p id="advertisement">ここに広告がランダムに流れます。3秒たつと他の広告になります。3つ広告がでたら終わります。</p>
+		<p id="result">広告を見て9秒たつとここが変化します</p>
+	</div>
+	<script>
+
+		const button_watch = document.getElementById("button_watch");
+		const result = document.getElementById("result")
+
+		let intervalId01;
+		let intervalId02;
+
+		const ads = {
+		    dentist: "元住吉から徒歩5分の優良歯科です。",
+		    drug: "便秘でお悩みのあなたに！飲んですぐ効く便秘薬",
+		    house: "近くに大きなスーパーとコンビニがあります",
+		    net:"駅ちかのネットカフェです。",
+		    convi:"何でもそろったコンビニです",
+		    cafe:"おいしいコーヒーが自慢です",
+		    cafe02:"豆にこだわった店です",
+		    cafe03:"パナマゲイシャ入荷しました"
+		};
+		let advertisement = document.getElementById("advertisement");
+
+		const timer = document.getElementById("timer");
+		
+		let second = 0;
+
+		button_watch.addEventListener("pointerdown",function(){
+
+			let timer = document.getElementById("timer");
+			let timerContent = 0.0;
+			timer.textContent = timerContent.toFixed(1) + "秒";
+
+			button_watch.disabled = true;
+
+			let adsValues = Object.values(ads);
+			let randomValue = adsValues[Math.floor(Math.random()*adsValues.length)];
+			advertisement.textContent = randomValue;
+
+			intervalId01 = setInterval(function(){
+				
+				let adsValues = Object.values(ads);
+				let randomValue = adsValues[Math.floor(Math.random()*adsValues.length)];
+				advertisement.textContent = randomValue;
+
+				console.log(randomValue);
+			},3000);
+
+
+			intervalId02 = setInterval(function(){
+				timerContent += 0.1; // 0.1ずつ増やす
+				timer.textContent = timerContent.toFixed(1) + "秒"; // 小数点第1位に整えて表示
+
+			}, 100);
+
+			setTimeout(function() {
+		        clearInterval(intervalId01);
+		        clearInterval(intervalId02);
+		        //button_watch.disabled = false;
+		        result.textContent = "ご褒美です！";
+		    }, 9000);
+		
+
+		})
+
+	</script>
+</body>
+</html>

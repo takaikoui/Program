@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>賢いローディングスピナー</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      background-color: #f8f9fa;
+    }
+
+    /* 💡 初期状態は display: none; で非表示にしておく */
+    #loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(255, 255, 255, 0.95);
+      display: none; /* 初期状態は非表示 */
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    /* スピナーを表示するためのクラス */
+    #loading-screen.show {
+      display: flex;
+      opacity: 1;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #e0e0e0;
+      border-top: 5px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .main-content {
+      max-width: 600px;
+      margin: 50px auto;
+      text-align: center;
+      padding: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loading-screen">
+    <div class="spinner"></div>
+    <p>データを読み込んでいます...</p>
+  </div>
+
+  <main class="main-content">
+    <h1>読み込み速度テスト</h1>
+    <p>ボタンを押して、スピナーの挙動を試せます。</p>
+    
+    <button onclick="loadData(200)">① 軽いデータ（0.2秒で完了）</button>
+    <button onclick="loadData(2000)">② 重いデータ（2秒で完了）</button>
+    
+    <div id="result" style="margin-top: 30px; font-weight: bold; color: #2c3e50;"></div>
+  </main>
+
+  <script>
+    const loadingScreen = document.getElementById('loading-screen');
+    const resultDiv = document.getElementById('result');
+    let timerId = null;
+
+    // データを読み込む関数（引数に「かかりそうな時間」を入れる擬似関数）
+    function loadData(delayTime) {
+      resultDiv.innerText = "データ読み込み開始...";
+      
+      // ---------------------------------------------------
+      // 💡 ここがポイント：300ミリ秒（0.3秒）の猶予（タイマー）を作る
+      // ---------------------------------------------------
+      timerId = setTimeout(() => {
+        // 0.3秒経っても処理が終わっていなければ、スピナーを表示する
+        loadingScreen.classList.add('show');
+      }, 300); 
+
+      // データの読み込み処理（模擬）
+      setTimeout(() => {
+        
+        // 【処理完了時の処理】
+        // 1. もし0.3秒以内に処理が終わっていたら、スピナー表示タイマーをキャンセルする
+        clearTimeout(timerId);
+        
+        // 2. スピナーを非表示にする（表示されていた場合のため）
+        loadingScreen.classList.remove('show');
+        
+        resultDiv.innerText = `読み込み完了！ (かかった時間: ${delayTime}ms)`;
+        
+      }, delayTime);
+    }
+  </script>
+
+</body>
+</html>
