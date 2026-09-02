@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>クラスとコンストラクタ ec shop</title>
+</head>
+<body>
+	<h1>クラスとコンストラクタでecサイトの仕組みをちょっと学ぶ</h1>
+
+	<section id="ec_container"></section>
+
+<script>
+	const ec_container = document.getElementById("ec_container");
+
+	const clothGroup = [
+		{ name: "スカート", price: 1000 },
+		{ name: "トップス", price: 3000 },
+		{ name: "コート",   price: 8000 }
+	];
+
+	const clothSelect = clothGroup[0];
+
+	const discountSet = {
+		discount_spring : 0.8,
+		discount_summer : 0.75,
+		discount_autumn : 0.9,
+		discount_winter: 0.85
+	}
+	
+	const discountSelect = discountSet.discount_spring;
+
+	class cloth {
+		constructor(name,price,discount){
+			this.name = name;
+			this.price = price;
+			this.discount = discount;
+		}
+
+		discont(){
+			return this.price*this.discount;
+		}
+	};
+
+	const buyingCloth = new cloth(clothSelect.name, clothSelect.price, discountSelect);
+
+	const createDiv = document.createElement("div");
+	createDiv.textContent = `${buyingCloth.name} の元の価格: ${buyingCloth.price}円 ➔ 割引価格: ${buyingCloth.discont()}円`;
+	const clothDiv = ec_container.appendChild(createDiv);
+
+	
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ポケモン管理システム（複数対応版）</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f0fdf4; }
+    .card { background: white; padding: 20px; border-radius: 12px; max-width: 320px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 16px; }
+    .btn { background: #10b981; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    .btn:hover { background: #059669; }
+    .status { margin: 12px 0; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+
+  <h2>🧢 手持ちポケモン</h2>
+  <!-- ポケモンのカードがここに自動で追加されます -->
+  <div id="pokemon-list"></div>
+
+  <script>
+    // 1. ポケモンの「設計図（クラス）」
+    class Pokemon {
+      constructor(name, type, level, hp) {
+        this.name = name;
+        this.type = type;
+        this.level = level;
+        this.hp = hp;
+      }
+
+      // 特訓メソッド
+      train() {
+        this.level += 1;
+        this.hp += 5;
+      }
+    }
+
+    // 2. クラスを使ってポケモンを3匹つくる（インスタンス化）
+    const team = [
+      new Pokemon("ピカチュウ", "でんき", 5, 20),
+      new Pokemon("ヒトカゲ", "ほのお", 5, 22),
+      new Pokemon("ゼニガメ", "みず", 5, 24)
+    ];
+
+    // 3. 画面にカードを描画する関数
+    function render() {
+      const listEl = document.getElementById("pokemon-list");
+      listEl.innerHTML = ""; // 画面を一度クリア
+
+      team.forEach((pokemon, index) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <h2>${pokemon.name}</h2>
+          <div class="status">
+            <p>タイプ: ${pokemon.type}</p>
+            <p>レベル: <strong>${pokemon.level}</strong></p>
+            <p>HP: ${pokemon.hp}</p>
+          </div>
+          <button class="btn" onclick="trainPokemon(${index})">特訓する</button>
+        `;
+        listEl.appendChild(card);
+      });
+    }
+
+    // 4. 指定したポケモンを特訓する関数
+    function trainPokemon(index) {
+      team[index].train(); // 該当するポケモンの train() メソッドを実行！
+      render();            // 画面を再描画
+    }
+
+    // 初期表示
+    render();
+  </script>
+
+</body>
+</html>

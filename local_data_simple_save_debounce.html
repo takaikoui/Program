@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>フォーム自動保存機能</title>
+ 
+</head>
+<body>
+
+  <h2> お問い合わせフォーム（デバウンス処理自動保存つき）</h2>
+
+ <form id="form_01">
+  <label for="name">お名前</label>
+   <input type="text" id="name" name="name">
+  <label for="address">住所</label>
+  <!--input type="textarea" id="address" name="address"-->
+  <textarea id="address" name="address"></textarea>
+ </form>
+ <button>送る</button>
+
+ <div id="savedStatus"></div>
+
+ <script>
+  const form_01 = document.getElementById("form_01");
+  const STORAGE_KEY = "draft_form_data_debounce";
+
+  // ★ 1. タイマーIDを入れておく変数を外側で用意
+  let timer;
+
+  // 2. 入力イベントが発生するたびに実行
+  form_01.addEventListener("input", function() {
+
+    // ① もし前にセットしたタイマーが動いていたらキャンセルする！
+    clearTimeout(timer);
+
+    // ② 新しくタイマーをセット（500ms = 0.5秒後に実行）
+    timer = setTimeout(function() {
+      
+      // ★ 入力の手が止まって 0.5秒 後に初めてここが実行される！
+      const formData = {
+        name: form_01.elements['name'].value,
+        address: form_01.elements['address'].value
+      };
+
+      // localStorage に保存
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+      console.log("デバウンス自動保存完了！:", formData);
+
+    }, 500); // 500ミリ秒待ち
+  });
+
+  // 3. 画面が開いた時の復元処理
+  window.addEventListener("DOMContentLoaded", function() {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+      const formData = JSON.parse(savedData);
+      if (formData.name) form_01.elements['name'].value = formData.name;
+      if (formData.address) form_01.elements['address'].value = formData.address;
+    }
+  });
+</script>
+</body>
+</html>

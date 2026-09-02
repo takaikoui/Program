@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>服を選ぶプログラム</title>
+</head>
+
+<body>
+	<h1>服を選ぶプログラム</h1>
+
+	<section id="cloth">
+	</section>
+	
+	<section id="result-section">
+		<div id="result-div"></div>
+	</section>
+
+<script>
+	const totalPrice = 0;
+	const cloth = document.getElementById('cloth');
+	const resultDiv = document.getElementById('result-div');
+
+
+	class clothData{
+		constructor(name,price = 0, amount = 0){
+			this.name = name;
+			this.price = price
+			this.amount = amount;
+		}
+
+		totalPrice += price;
+
+		if(totalPrice >= 5000){
+			totalPriceprice*=0.95;
+		}
+	}	
+
+
+	const itemNameContainer =document.createElement("p"); 
+	const itemPriceContainer =document.createElement("p"); 
+	const itemAmountContainer = document.createElement("p");
+	cloth.appendChild(itemName);
+	cloth.appendChild(itemPrice);
+	cloth.appendChild(itemAmount);
+
+</script>
+
+</body>
+</html>

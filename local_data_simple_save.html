@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>フォーム自動保存機能</title>
+ 
+</head>
+<body>
+
+  <h2> お問い合わせフォーム（自動保存つき）</h2>
+
+ <form id="form_01">
+  <label for="name">お名前</label>
+   <input type="text" id="name" name="name">
+  <label for="address">住所</label>
+  <!--input type="textarea" id="address" name="address"-->
+  <textarea id="address" name="address"></textarea>
+ </form>
+ <button>送る</button>
+
+ <div id="savedStatus"></div>
+
+ <script>
+   const form_01 = document.getElementById("form_01");
+   const STORAGE_KEY = "draft_form_data";
+   
+    window.addEventListener('DOMContentLoaded',function(){
+      const seved_data = localStorage.getItem(STORAGE_KEY);
+    console.log(seved_data);  
+    })
+    
+
+   form_01.addEventListener("input",function(){
+    const form_01_data = {
+    name : form_01.elements['name'].value,
+    address : form_01.elements['address'].value
+   }
+
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(form_01_data));
+
+   console.log(form_01_data);
+   })
+   
+ </script>
+</body>
+</html>

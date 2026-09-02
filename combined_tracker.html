@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>体重＆カロリー 複合ダッシュボード</title>
+  <!-- Chart.js & Annotation プラグイン -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+      background-color: #f4f7f6;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .header h1 {
+      font-size: 24px;
+      color: #2c3e50;
+      margin-bottom: 8px;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      margin-bottom: 25px;
+    }
+    .card h2 {
+      font-size: 16px;
+      color: #34495e;
+      margin-top: 0;
+      margin-bottom: 15px;
+      border-left: 4px solid #4CAF50;
+      padding-left: 10px;
+    }
+    .card.delete-card h2 {
+      border-left-color: #e74c3c;
+    }
+    .input-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+    .input-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .input-field label {
+      font-size: 12px;
+      font-weight: bold;
+      color: #555;
+    }
+    .input-field input {
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      outline: none;
+    }
+    .input-field.target-field input {
+      border: 2px solid #e74c3c;
+      background-color: #fdf2f2;
+    }
+    .btn-submit {
+      width: 100%;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px;
+      font-size: 15px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-submit:hover { background-color: #43a047; }
+    
+    .btn-delete {
+      width: 100%;
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      padding: 10px;
+      font-size: 14px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-delete:hover { background-color: #c0392b; }
+
+    .delete-flex {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+    .delete-flex .input-field {
+      flex: 1;
+    }
+    .delete-flex button {
+      flex: 1;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 400px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1>📊 体重＆カロリー 複合ダッシュボード</h1>
+    </div>
+
+    <!-- 1. データ入力カード -->
+    <div class="card">
+      <h2>📝 今日のデータを記録する</h2>
+      <div class="input-grid">
+        <div class="input-field">
+          <label for="dateInput">日付</label>
+          <input type="date" id="dateInput">
+        </div>
+        <div class="input-field target-field">
+          <label for="targetInput">🎯 目標体重 (kg)</label>
+          <input type="number" id="targetInput" step="0.1" value="48.0" onchange="updateTargetFromInput()">
+        </div>
+        <div class="input-field">
+          <label for="weightInput">体重 (kg)</label>
+          <input type="number" id="weightInput" step="0.1" placeholder="49.8">
+        </div>
+        <div class="input-field">
+          <label for="breakfastInput">朝食 (kcal)</label>
+          <input type="number" id="breakfastInput" placeholder="400">
+        </div>
+        <div class="input-field">
+          <label for="lunchInput">昼食 (kcal)</label>
+          <input type="number" id="lunchInput" placeholder="650">
+        </div>
+        <div class="input-field">
+          <label for="dinnerInput">夕食 (kcal)</label>
+          <input type="number" id="dinnerInput" placeholder="550">
+        </div>
+      </div>
+      <button class="btn-submit" onclick="addRecord()">記録を追加して更新</button>
+    </div>
+
+    <!-- 2. データ削除カード -->
+    <div class="card delete-card">
+      <h2>🗑️ 指定した日のデータを削除する</h2>
+      <div class="delete-flex">
+        <div class="input-field">
+          <label for="deleteDateInput">削除したい日付</label>
+          <input type="date" id="deleteDateInput">
+        </div>
+        <div>
+          <button class="btn-delete" onclick="deleteRecord()">この日のデータを消去</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 合体グラフ -->
+    <div class="card">
+      <h2>📈 体重推移（折れ線） × カロリー内訳（積み上げ棒）</h2>
+      <div class="chart-container">
+        <canvas id="combinedChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 今日の日付をセット
+    document.getElementById('dateInput').valueAsDate = new Date();
+    document.getElementById('deleteDateInput').valueAsDate = new Date();
+
+    // 初期目標体重 (kg)
+    let currentTargetWeight = 48.0;
+
+    // ⭐ 修正：初期データの日付表記を '08/10' のようにゼロ埋め形式（MM/DD）に統一！
+    const labels = ['08/10', '08/11', '08/12', '08/13'];
+    const weights = [50.5, 50.2, 49.8, 51.2];
+    const breakfastData = [380, 420, 350, 400];
+    const lunchData = [600, 580, 620, 700];
+    const dinnerData = [520, 650, 480, 600];
+
+    const ctx = document.getElementById('combinedChart').getContext('2d');
+    const combinedChart = new Chart(ctx, {
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            type: 'line',
+            label: '体重 (kg)',
+            data: weights,
+            borderColor: '#9b59b6',
+            backgroundColor: '#9b59b6',
+            borderWidth: 3,
+            pointRadius: 6,
+            pointHoverRadius: 9,
+            tension: 0.3,
+            yAxisID: 'yAxisWeight',
+            order: 1
+          },
+          {
+            type: 'bar',
+            label: '朝食 (kcal)',
+            data: breakfastData,
+            backgroundColor: '#FF9F40',
+            stack: 'calorieStack',
+            yAxisID: 'yAxisCalorie',
+            order: 2
+          },
+          {
+            type: 'bar',
+            label: '昼食 (kcal)',
+            data: lunchData,
+            backgroundColor: '#FF6384',
+            stack: 'calorieStack',
+            yAxisID: 'yAxisCalorie',
+            order: 2
+          },
+          {
+            type: 'bar',
+            label: '夕食 (kcal)',
+            data: dinnerData,
+            backgroundColor: '#36A2EB',
+            stack: 'calorieStack',
+            yAxisID: 'yAxisCalorie',
+            order: 2
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: true, position: 'top' },
+          annotation: {
+            annotations: {
+              targetLine: {
+                type: 'line',
+                yScaleID: 'yAxisWeight',
+                yMin: currentTargetWeight,
+                yMax: currentTargetWeight,
+                borderColor: '#e74c3c',
+                borderWidth: 2,
+                borderDash: [6, 6],
+                label: {
+                  display: true,
+                  content: `目標: ${currentTargetWeight}kg`,
+                  position: 'end',
+                  backgroundColor: 'rgba(231, 76, 60, 0.85)',
+                  color: '#fff',
+                  font: { size: 11, weight: 'bold' }
+                }
+              }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              footer: (tooltipItems) => {
+                let calorieTotal = 0;
+                tooltipItems.forEach((item) => {
+                  if (item.datasetIndex !== 0) calorieTotal += item.raw;
+                });
+                return calorieTotal > 0 ? `合計カロリー: ${calorieTotal} kcal` : '';
+              }
+            }
+          }
+        },
+        scales: {
+          yAxisCalorie: {
+            type: 'linear',
+            position: 'left',
+            stacked: true,
+            title: { display: true, text: 'カロリー (kcal)' },
+            min: 0,
+            max: 2500,
+            grid: { drawOnChartArea: true }
+          },
+          yAxisWeight: {
+            type: 'linear',
+            position: 'right',
+            title: { display: true, text: '体重 (kg)' },
+            min: 45,
+            max: 55,
+            grid: { drawOnChartArea: false }
+          }
+        }
+      }
+    });
+
+    // 目標体重更新関数
+    function updateTargetFromInput() {
+      const targetVal = parseFloat(document.getElementById('targetInput').value);
+      if (!isNaN(targetVal)) {
+        currentTargetWeight = targetVal;
+        const targetLine = combinedChart.options.plugins.annotation.annotations.targetLine;
+        targetLine.yMin = currentTargetWeight;
+        targetLine.yMax = currentTargetWeight;
+        targetLine.label.content = `目標: ${currentTargetWeight}kg`;
+        combinedChart.update();
+      }
+    }
+
+    // データ追加関数
+    function addRecord() {
+      const dateVal = document.getElementById('dateInput').value;
+      const weightVal = parseFloat(document.getElementById('weightInput').value);
+      const bVal = parseFloat(document.getElementById('breakfastInput').value) || 0;
+      const lVal = parseFloat(document.getElementById('lunchInput').value) || 0;
+      const dVal = parseFloat(document.getElementById('dinnerInput').value) || 0;
+
+      if (!dateVal || isNaN(weightVal)) {
+        alert('日付と体重を正しく入力してくれよな！');
+        return;
+      }
+
+      updateTargetFromInput();
+
+      // "2026-08-13" -> "08/13"
+      const formattedDate = dateVal.substring(5).replace('-', '/');
+
+      combinedChart.data.labels.push(formattedDate);
+      combinedChart.data.datasets[0].data.push(weightVal);
+      combinedChart.data.datasets[1].data.push(bVal);
+      combinedChart.data.datasets[2].data.push(lVal);
+      combinedChart.data.datasets[3].data.push(dVal);
+      
+      combinedChart.update();
+
+      document.getElementById('weightInput').value = '';
+      document.getElementById('breakfastInput').value = '';
+      document.getElementById('lunchInput').value = '';
+      document.getElementById('dinnerInput').value = '';
+    }
+
+    // データ削除関数
+    function deleteRecord() {
+      const deleteDateVal = document.getElementById('deleteDateInput').value;
+      if (!deleteDateVal) {
+        alert('削除したい日付を選んでくれよな！');
+        return;
+      }
+
+      // "2026-08-13" -> "08/13"
+      const formattedDate = deleteDateVal.substring(5).replace('-', '/');
+
+      // 指定された日付がデータ内に存在するか探す
+      const targetIndex = combinedChart.data.labels.indexOf(formattedDate);
+
+      if (targetIndex === -1) {
+        alert(`${formattedDate} のデータは見つからなかったぜ！`);
+        return;
+      }
+
+      if (confirm(`${formattedDate} の記録を削除して本当に大丈夫か？`)) {
+        combinedChart.data.labels.splice(targetIndex, 1);
+        
+        combinedChart.data.datasets.forEach(dataset => {
+          dataset.data.splice(targetIndex, 1);
+        });
+
+        combinedChart.update();
+        alert(`${formattedDate} のデータを削除したぜ！`);
+      }
+    }
+  </script>
+</body>
+</html>

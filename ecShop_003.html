@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>クラスとコンストラクタ ec shop</title>
+	<style>
+		/* ちょっと見やすくカード風のスタイルを追加 */
+		.item-card {
+			border: 1px solid #ddd;
+			border-radius: 8px;
+			padding: 12px 16px;
+			margin-bottom: 10px;
+			background-color: #f9f9f9;
+		}
+	</style>
+</head>
+<body>
+	<h1>クラスとコンストラクタでecサイトの仕組みをちょっと学ぶ</h1>
+	<section id="ec_container"></section>
+
+<script>
+	const ec_container = document.getElementById("ec_container");
+
+	// 1. 商品のデータリスト
+	const clothGroup = [
+		{ name: "スカート", price: 1000 },
+		{ name: "トップス", price: 3000 },
+		{ name: "コート",   price: 8000 }
+	];
+
+	// 2. 割引率のセット
+	const discountSet = {
+		discount_spring : 0.8,
+		discount_summer : 0.75,
+		discount_autumn : 0.9,
+		discount_winter : 0.85
+	};
+	
+	// 春の割引率（0.8）を使用
+	const discountSelect = discountSet.discount_spring;
+
+	// 3. 服クラスの定義
+	class Cloth {
+		constructor(name, price, discount){
+			this.name = name;
+			this.price = price;
+			this.discount = discount;
+		}
+
+		discont(){
+			return this.price * this.discount;
+		}
+	};
+
+	// 4. forEach で配列（clothGroup）の中身を1つずつ取り出して処理！
+	clothGroup.forEach(item => {
+		// 取り出したデータ（item）から Cloth インスタンスを生成
+		const buyingCloth = new Cloth(item.name, item.price, discountSelect);
+
+		// HTML要素（div）の作成
+		const createDiv = document.createElement("div");
+		createDiv.className = "item-card"; // デザイン用クラスの追加
+
+		// テキストの設定
+		createDiv.textContent = `${buyingCloth.name} の元の価格: ${buyingCloth.price}円 ➔ 割引価格: ${buyingCloth.discont()}円`;
+
+		// コンテナ要素の中に追加
+		ec_container.appendChild(createDiv);
+	});
+
+</script>
+
+</body>
+</html>

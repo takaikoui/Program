@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ECサイト カート・割引管理システム（Class活用デモ）</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --border: #e2e8f0;
+      --accent: #ef4444;
+      --green: #10b981;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      margin: 0;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 768px) {
+      .container { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border);
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      margin-top: 0;
+      margin-bottom: 16px;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 8px;
+    }
+
+    .product-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .product-info h3 {
+      font-size: 0.95rem;
+      margin: 0 0 4px 0;
+    }
+
+    .product-price {
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    button.add-btn {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: opacity 0.2s;
+    }
+
+    button.add-btn:hover { opacity: 0.9; }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      font-size: 0.9rem;
+    }
+
+    .qty-controls {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .qty-btn {
+      background: #e2e8f0;
+      border: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .coupon-box {
+      margin-top: 20px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .coupon-box input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+
+    .coupon-box button {
+      background: #475569;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+
+    .summary-row.total {
+      font-size: 1.25rem;
+      font-weight: bold;
+      border-top: 2px dashed var(--border);
+      padding-top: 12px;
+      margin-top: 12px;
+    }
+
+    .discount-text { color: var(--accent); }
+    .badge {
+      background: #d1fae5;
+      color: #065f46;
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 12px;
+      margin-left: 8px;
+    }
+
+    .log-panel {
+      grid-column: 1 / -1;
+      background: #0f172a;
+      color: #38bdf8;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- 商品一覧 -->
+    <div class="card">
+      <h2>📦 商品リスト</h2>
+      <div id="productList"></div>
+    </div>
+
+    <!-- ショッピングカート -->
+    <div class="card">
+      <h2>🛒 カートの中身</h2>
+      <div id="cartItems"></div>
+
+      <div class="coupon-box">
+        <input type="text" id="couponInput" placeholder="クーポンコード（例: SALE10）">
+        <button id="applyCouponBtn">適用</button>
+      </div>
+
+      <div style="margin-top: 24px;">
+        <div class="summary-row">
+          <span>小計（税抜）:</span>
+          <span id="subtotal">¥0</span>
+        </div>
+        <div class="summary-row discount-text" id="discountRow" style="display: none;">
+          <span>クーポン割引:</span>
+          <span id="discount">¥0</span>
+        </div>
+        <div class="summary-row">
+          <span>送料:</span>
+          <span id="shipping">¥0</span>
+        </div>
+        <div class="summary-row">
+          <span>消費税 (10%):</span>
+          <span id="tax">¥0</span>
+        </div>
+        <div class="summary-row total">
+          <span>合計金額（税込）:</span>
+          <span id="grandTotal">¥0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- システムログ表示パネル -->
+    <div class="log-panel" id="logPanel">
+      <div>[System] クラスシステムが初期化されました。</div>
+    </div>
+  </div>
+
+  <script>
+    // ====================================================
+    // クラス定義（JavaScript）
+    // ====================================================
+
+    // 1. 商品マスタークラス
+    class Product {
+      constructor(id, name, price) {
+        this.id = id;          // 商品ID
+        this.name = name;      // 商品名
+        this.price = price;    // 税抜単価
+      }
+    }
+
+    // 2. カート内の1アイテムを扱うクラス
+    class CartItem {
+      constructor(product, quantity = 1) {
+        this.product = product;   // Productクラスのインスタンス
+        this.quantity = quantity; // 購入数量
+      }
+
+      // 単価 × 数量 を計算するメソッド
+      getItemSubtotal() {
+        return this.product.price * this.quantity;
+      }
+    }
+
+    // 3. カート全体の計算ロジックを担うクラス
+    class Cart {
+      constructor(freeShippingThreshold = 5000, shippingFee = 500) {
+        this.items = [];                           // カート内のCartItem配列
+        this.freeShippingThreshold = freeShippingThreshold; // 送料無料ライン（5,000円）
+        this.shippingFee = shippingFee;           // 通常送料（500円）
+        this.discountRate = 0;                     // 割引率
+      }
+
+      // 商品をカートに追加
+      addProduct(product) {
+        const existingItem = this.items.find(item => item.product.id === product.id);
+        if (existingItem) {
+          existingItem.quantity += 1;
+        } else {
+          this.items.push(new CartItem(product, 1));
+        }
+      }
+
+      // 数量変更
+      updateQuantity(productId, delta) {
+        const item = this.items.find(item => item.product.id === productId);
+        if (item) {
+          item.quantity += delta;
+          if (item.quantity <= 0) {
+            this.items = this.items.filter(i => i.product.id !== productId);
+          }
+        }
+      }
+
+      // クーポン適用
+      applyCoupon(code) {
+        if (code === "SALE10") {
+          this.discountRate = 0.1; // 10% OFF
+          return { success: true, message: "10%OFFクーポンを適用しました！" };
+        } else {
+          return { success: false, message: "無効なクーポンコードです。" };
+        }
+      }
+
+      // 小計（商品合計・税抜）計算
+      getSubtotal() {
+        return this.items.reduce((sum, item) => sum + item.getItemSubtotal(), 0);
+      }
+
+      // 割引額計算
+      getDiscountAmount() {
+        return Math.floor(this.getSubtotal() * this.discountRate);
+      }
+
+      // 送料計算（5000円以上で無料）
+      getShippingFee() {
+        const total = this.getSubtotal() - this.getDiscountAmount();
+        if (total === 0) return 0;
+        return total >= this.freeShippingThreshold ? 0 : this.shippingFee;
+      }
+
+      // 消費税（10%）計算
+      getTax() {
+        const taxable = this.getSubtotal() - this.getDiscountAmount();
+        return Math.floor(taxable * 0.1);
+      }
+
+      // 最終合計額（税込・送料込）計算
+      getGrandTotal() {
+        const taxable = this.getSubtotal() - this.getDiscountAmount();
+        return taxable + this.getTax() + this.getShippingFee();
+      }
+    }
+
+    // ====================================================
+    // 画面の制御とイベント処理
+    // ====================================================
+
+    // 商品データの初期化（Productクラスを利用）
+    const products = [
+      new Product(1, "Webデザイン基本マスター本", 2800),
+      new Product(2, "UXUIデザイン思考ノーツ", 1800),
+      new Product(3, "JavaScript本格入門", 3200)
+    ];
+
+    // カートの初期化（5,000円以上で送料無料）
+    const myCart = new Cart(5000, 500);
+
+    const productListEl = document.getElementById("productList");
+    const cartItemsEl = document.getElementById("cartItems");
+    const logPanel = document.getElementById("logPanel");
+
+    function log(msg) {
+      const div = document.createElement("div");
+      div.textContent = `> ${msg}`;
+      logPanel.appendChild(div);
+      logPanel.scrollTop = logPanel.scrollHeight;
+    }
+
+    // 商品一覧の表示描画
+    products.forEach(p => {
+      const div = document.createElement("div");
+      div.className = "product-item";
+      div.innerHTML = `
+        <div class="product-info">
+          <h3>${p.name}</h3>
+          <div class="product-price">¥${p.price.toLocaleString()} (税抜)</div>
+        </div>
+        <button class="add-btn" onclick="addToCart(${p.id})">カートに追加</button>
+      `;
+      productListEl.appendChild(div);
+    });
+
+    // カート追加
+    window.addToCart = function(productId) {
+      const targetProduct = products.find(p => p.id === productId);
+      myCart.addProduct(targetProduct);
+      log(`カート追加: [${targetProduct.name}]`);
+      updateCartUI();
+    };
+
+    // 数量変更
+    window.changeQty = function(productId, delta) {
+      myCart.updateQuantity(productId, delta);
+      updateCartUI();
+    };
+
+    // クーポン適用
+    document.getElementById("applyCouponBtn").addEventListener("click", () => {
+      const code = document.getElementById("couponInput").value.trim();
+      const res = myCart.applyCoupon(code);
+      log(res.message);
+      updateCartUI();
+    });
+
+    // UI画面の更新処理（すべてCartクラスの計算メソッドを呼び出して画面反映）
+    function updateCartUI() {
+      // 1. カート一覧の更新
+      cartItemsEl.innerHTML = "";
+      if (myCart.items.length === 0) {
+        cartItemsEl.innerHTML = "<p style='color: #64748b; font-size: 0.85rem;'>カートは空です</p>";
+      } else {
+        myCart.items.forEach(item => {
+          const div = document.createElement("div");
+          div.className = "cart-item";
+          div.innerHTML = `
+            <div>
+              <strong>${item.product.name}</strong><br>
+              <small>¥${item.product.price.toLocaleString()} × ${item.quantity}</small>
+            </div>
+            <div class="qty-controls">
+              <button class="qty-btn" onclick="changeQty(${item.product.id}, -1)">-</button>
+              <span>${item.quantity}</span>
+              <button class="qty-btn" onclick="changeQty(${item.product.id}, 1)">+</button>
+            </div>
+          `;
+          cartItemsEl.appendChild(div);
+        });
+      }
+
+      // 2. 金額計算結果の更新
+      const subtotal = myCart.getSubtotal();
+      const discount = myCart.getDiscountAmount();
+      const shipping = myCart.getShippingFee();
+      const tax = myCart.getTax();
+      const grandTotal = myCart.getGrandTotal();
+
+      document.getElementById("subtotal").textContent = `¥${subtotal.toLocaleString()}`;
+      
+      const discountRow = document.getElementById("discountRow");
+      if (discount > 0) {
+        discountRow.style.display = "flex";
+        document.getElementById("discount").textContent = `-¥${discount.toLocaleString()}`;
+      } else {
+        discountRow.style.display = "none";
+      }
+
+      const shippingEl = document.getElementById("shipping");
+      if (subtotal > 0 && shipping === 0) {
+        shippingEl.innerHTML = `¥0 <span class="badge">送料無料適用！</span>`;
+      } else {
+        shippingEl.textContent = `¥${shipping.toLocaleString()}`;
+      }
+
+      document.getElementById("tax").textContent = `¥${tax.toLocaleString()}`;
+      document.getElementById("grandTotal").textContent = `¥${grandTotal.toLocaleString()}`;
+    }
+
+    // 初期表示
+    updateCartUI();
+  </script>
+</body>
+</html>

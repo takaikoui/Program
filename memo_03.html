@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>メモ帳フォルダ付き</title>
+	<style>
+		.textarea {
+			width: 100%;
+			height: 300px;
+		}
+		.left {
+			width: 30%;
+		}
+		.right{
+			width: 70%;
+		}
+		#container {
+			display: flex;
+			width: 100%;
+		}
+		/* 🔽 これを追加！出力された <p> タグの改行を有効にする設定 */
+		#output p {
+			white-space: pre-wrap;
+			word-break: break-all; /* 長い文章が枠からはみ出すのを防ぐ設定 */
+		}
+	</style>
+</head>
+<body>
+	<div id="container">
+		<section class="left">
+			<p>フォルダがここに作られます</p>
+			<div id="folders">
+			</div>
+		</section>
+		<section class="right">
+			<p>メモ帳フォルダ付、localHolderに保存します</p>
+			<textarea id="textarea" class="textarea" placeholder="ここにテキストを書いてください"></textarea>
+			<button id=button>下にアウトプットを出します</button>
+			<button id="showHistoryButton">履歴をポップアップで表示</button>
+			<div id="output"></div>
+		</section>
+	</div>
+
+	<dialog id="historyDialog">
+		<div class="dialog-header">
+			<h3>これまでのメモ履歴</h3>
+			<button id="closeDialogButton">✖ 閉じる</button>
+		</div>
+		<div id="dialogHistoryList">
+			<!-- ここに JavaScript で履歴が差し込まれます -->
+		</div>
+	</dialog>
+
+	<script>
+		let textarea = document.getElementById("textarea");
+		let button = document.getElementById("button");
+		let output = document.getElementById("output");
+
+		// <dialog> 用の要素を取得
+		let showHistoryButton = document.getElementById("showHistoryButton");
+		let closeDialogButton = document.getElementById("closeDialogButton");
+		let historyDialog = document.getElementById("historyDialog");
+		let dialogHistoryList = document.getElementById("dialogHistoryList");
+
+		button.addEventListener("click", function(){
+
+			let text = textarea.value;
+
+			if (text === "") { 
+			    return;
+			}
+			let memoList = JSON.parse(localStorage.getItem("myMemos")) || [];
+
+			let textOutput = document.createElement("p");
+			textOutput.textContent = text;
+			textOutput.id = "memo" + (memoList.length + 1);
+			output.prepend(textOutput);
+
+			// ★ 罠②修正：配列に追加して localStorage に保存！
+			memoList.push(text);
+			localStorage.setItem("myMemos", JSON.stringify(memoList));
+
+			// 入力欄をクリア
+			textarea.value = "";
+
+		})
+
+
+		showHistoryButton.addEventListener("click", function(){
+			// 1. ダイアログの中身を一度リセット
+			dialogHistoryList.textContent = "";
+
+			// 2. localStorage から最新のメモ履歴を取り出して復元（parse）
+			let currentMemos = JSON.parse(localStorage.getItem("myMemos")) || [];
+
+			// 3. 履歴が空かどうかに応じて画面を作る
+			if (currentMemos.length === 0) {
+				dialogHistoryList.textContent = "まだ保存されたメモはありません。";
+			} else {
+				currentMemos.forEach(function(memoText, index) {
+					let historyItem = document.createElement("p");
+					historyItem.textContent = (index + 1) + ". " + memoText;
+					historyItem.style.borderBottom = "1px dashed #eee";
+					historyItem.style.padding = "5px 0";
+					dialogHistoryList.prepend(historyItem);
+				});
+			}
+
+			// 4. ダイアログをモーダルで開く！
+			historyDialog.showModal();
+		});
+
+		// ✖ 「閉じる」ボタンを押したときの処理
+		closeDialogButton.addEventListener("click", function(){
+			historyDialog.close();
+		});
+
+		// ダイアログの背景をクリックしたときも閉じる処理
+		historyDialog.addEventListener("click", function(event){
+			if (event.target === historyDialog) {
+				historyDialog.close();
+			}
+		});
+
+
+	</script>
+</body>
+</html>

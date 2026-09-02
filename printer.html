@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<title>プリンター</title>
+	
+	<style>
+		#display-input{
+			width: 100%;
+			height: 200px;
+		}
+		/* 🌟 追加：出力エリアの改行や空白をそのまま表示する設定 */
+		#output {
+			white-space: pre-wrap;
+			word-break: break-all; /* 長い英単語などの折り返し対策 */
+		}
+	</style>
+
+</head>
+<body>
+	
+	<textarea id="display-input" name="display" placeholder="ここに入力（改行もできます）"></textarea>
+	<button id="button-printer">ここを押すと印刷アルゴリズムが働きます</button><button id="history">今までの履歴を見ます</button>
+	<div id="output">	
+	</div>
+
+	<!-- dialogタグのポップアップ -->
+	<dialog id="history-dialog">
+		<h3>印刷履歴</h3>
+		<div id="history-output"></div>
+		<!-- 🌟 選択した項目を再印刷するボタン -->
+		<button id="reprint-selected">選択したものを再印刷</button>
+		<button id="close-dialog">閉じる</button>
+	</dialog>
+
+
+<script defer>
+	let display = document.getElementById("display-input");
+	let output = document.getElementById("output");
+	let btn = document.getElementById("button-printer");
+
+	// 履歴ボタンやダイアログ要素を取得
+	let historyBtn = document.getElementById("history");
+	let historyDialog = document.getElementById("history-dialog");
+	let closeDialogBtn = document.getElementById("close-dialog");
+	let historyOutput = document.getElementById("history-output");
+	
+	// 🌟 再印刷ボタンの要素を取得
+	let reprintBtn = document.getElementById("reprint-selected");
+
+	// 1. 印刷ボタンを押したときの処理
+	btn.addEventListener("click", function() {
+
+		if(display.value=== ""){
+			return;
+		}
+
+		let content = display.value;
+		let paragraph = document.createElement("p");
+		paragraph.textContent = content;
+		output.appendChild(paragraph);
+
+
+		// 続きの番号（連番）を計算してローカルストレージに保存する処理
+		let maxNum = 0;
+		for (let i = 0; i < localStorage.length; i++) {
+			let key = localStorage.key(i);
+			if (key.startsWith("printText_")) {
+				let num = parseInt(key.replace("printText_", ""), 10);
+				if (!isNaN(num) && num > maxNum) {
+					maxNum = num;
+				}
+			}
+		}
+		let storageKey = "printText_" + (maxNum + 1);
+		localStorage.setItem(storageKey, content);
+
+		// 入力欄をクリア
+		display.value = "";
+
+		btn.disabled = true;
+		setTimeout(function(){
+			btn.disabled = false;
+		}, 500);
+
+	});
+
+	// 2. 「今までの履歴を見ます」ボタンを押したときの処理
+	historyBtn.addEventListener("click", function() {
+		historyOutput.textContent = ""; // 履歴エリアを一旦リセット
+
+		let keys = [];
+		for (let i = 0; i < localStorage.length; i++) {
+			let key = localStorage.key(i);
+			if (key.startsWith("printText_")) {
+				keys.push(key);
+			}
+		}
+
+		// 番号順に並び替え
+		keys.sort((a, b) => {
+			let numA = parseInt(a.replace("printText_", ""), 10);
+			let numB = parseInt(b.replace("printText_", ""), 10);
+			return numA - numB;
+		});
+
+		// データを画面に反映（チェックボックス付きにする）
+		keys.forEach(key => {
+			let text = localStorage.getItem(key);
+			
+			// <label>の中にチェックボックスとテキストを入れる
+			let label = document.createElement("label");
+			let checkbox = document.createElement("input");
+			checkbox.type = "checkbox";
+			checkbox.value = key;
+
+			label.appendChild(checkbox);
+			label.append(` [${key}] ${text}`);
+			
+			let p = document.createElement("p");
+			p.appendChild(label);
+			historyOutput.appendChild(p);
+		});
+
+		// ダイアログを表示
+		historyDialog.showModal();
+	});
+
+	// 🌟 3. 「選択したものを再印刷」ボタンを押したときの処理
+	reprintBtn.addEventListener("click", function() {
+		let checkedBoxes = historyOutput.querySelectorAll("input[type=\"checkbox\"]:checked");
+
+		if (checkedBoxes.length === 0) {
+			alert("印刷する履歴が選択されていません！");
+			return;
+		}
+
+		checkedBoxes.forEach(checkbox => {
+			let key = checkbox.value;
+			let text = localStorage.getItem(key);
+
+			if (text !== null) {
+				let paragraph = document.createElement("p");
+				output.appendChild(paragraph);
+				paragraph.textContent = text;
+			}
+		});
+
+		historyDialog.close();
+	});
+
+	// 4. 「閉じる」ボタンを押したときの処理
+	closeDialogBtn.addEventListener("click", function() {
+		historyDialog.close();
+	});
+
+</script>
+</body>
+</html>

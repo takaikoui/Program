@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>フォーム自動保存機能</title>
+  <style>
+    body { font-family: sans-serif; max-width: 500px; margin: 30px auto; padding: 0 15px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+    input[type="text"], textarea { width: 100%; padding: 8px; box-sizing: border-box; }
+    .status { font-size: 0.85em; color: #666; margin-top: 5px; height: 1.2em; }
+  </style>
+</head>
+<body>
+
+  <h2>📋 お問い合わせフォーム（自動保存つき）</h2>
+
+  <form id="autoSaveForm">
+    <div class="form-group">
+      <label for="username">お名前</label>
+      <input type="text" id="username" name="username" placeholder="山田 太郎">
+    </div>
+
+    <div class="form-group">
+      <label for="message">お問い合わせ内容</label>
+      <textarea id="message" name="message" rows="5" placeholder="自由にご記入ください"></textarea>
+    </div>
+
+    <button type="submit">送信する</button>
+  </form>
+
+  <!-- 保存状態をそっと表示するメッセージ -->
+  <div id="saveStatus" class="status"></div>
+
+  <script>
+    const form = document.getElementById('autoSaveForm');
+    const saveStatus = document.getElementById('saveStatus');
+    const STORAGE_KEY = 'draft_form_data';
+
+    // ① ページ読み込み時：localStorage から保存データを復元
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedData = localStorage.getItem(STORAGE_KEY);
+      if (savedData) {
+        const formData = JSON.parse(savedData);
+        
+        // フォーム内の各入力欄に値を復元
+        Object.keys(formData).forEach(key => {
+          const input = form.elements[key];
+          if (input) {
+            input.value = formData[key];
+          }
+        });
+        
+        saveStatus.textContent = '※下書きから復元しました';
+      }
+    });
+
+    // ② フォーム入力時：リアルタイムで localStorage に自動保存
+    form.addEventListener('input', () => {
+      const formData = {
+        username: form.elements['username'].value,
+        message: form.elements['message'].value
+      };
+
+      // オブジェクトを JSON 文字列にして保存！
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+      saveStatus.textContent = '入力内容を自動保存しました...';
+    });
+
+    // ③ 送信完了時：下書きデータをクリア
+    form.addEventListener('submit', (e) => {
+      e.preventDefault(); // デモ用に送信をキャンセル
+      
+      alert('送信完了しました！下書きを削除します。');
+      localStorage.removeItem(STORAGE_KEY); // 送信できたらストレージを掃除！
+      form.reset();
+      saveStatus.textContent = '';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>超シンプルECカート</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f8fafc; }
+    .card { background: white; padding: 20px; border-radius: 8px; max-width: 300px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .btn { padding: 4px 10px; cursor: pointer; font-weight: bold; }
+    .price { font-size: 1.2rem; color: #2563eb; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h3>📖 JS入門テキスト</h3>
+    <p>単価: ¥2,000 (税込)</p>
+    <div>
+      数量: 
+      <button class="btn" onclick="changeQty(-1)">-</button>
+      <span id="qty">1</span>
+      <button class="btn" onclick="changeQty(1)">+</button>
+    </div>
+    <hr>
+    <p>合計金額: <span id="total" class="price">¥2,000</span></p>
+  </div>
+
+  <script>
+    // 1. 商品の「設計図（クラス）」をつくる
+    class SimpleCart {
+      constructor(price) {
+        this.price = price; // 単価
+        this.qty = 1;       // 初期数量
+      }
+
+      // 数量を変更して、合計を計算するメソッド
+      update(delta) {
+        this.qty = Math.max(1, this.qty + delta); // 1未満にはならない
+        return this.price * this.qty;             // 合計金額を返す
+      }
+    }
+
+    // 2. 単価2,000円でカートを作成（インスタンス化）
+    const myCart = new SimpleCart(2000);
+
+    // 3. ボタンが押された時の処理
+    function changeQty(delta) {
+      const total = myCart.update(delta); // クラス側で計算！
+      
+      // 画面（DOM）を更新
+      document.getElementById("qty").textContent = myCart.qty;
+      document.getElementById("total").textContent = `¥${total.toLocaleString()}`;
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSなしで動くスライダー</title>
+  <style>
+    /* --- 全体のレイアウト設定 --- */
+    .slider-container {
+      width: 100%;
+      max-width: 600px;
+      margin: 40px auto;
+      position: relative;
+      overflow: hidden; /* はみ出た画像を隠す */
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    /* ラジオボタン本体は画面から隠す */
+    input[type="radio"] {
+      display: none;
+    }
+
+    /* --- スライドが横に並ぶ枠 --- */
+    .slider-wrapper {
+      display: flex;
+      width: 300%; /* 画像3枚分（100% × 3） */
+      transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); /* スライドのアニメーション */
+    }
+
+    /* 各スライド（幅はコンテナと同じ1/3ずつ） */
+    .slider-slide {
+      width: 33.333%;
+    }
+
+    /* サンプル画像（ダミー画像生成サービスを使用しています） */
+    .slider-slide .demo-img {
+      width: 100%;
+      height: 350px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: bold;
+      color: white;
+    }
+    
+    /* 背景色（画像がなくても分かりやすいように設定） */
+    .bg1 { background: #3498db; }
+    .bg2 { background: #e74c3c; }
+    .bg3 { background: #2ecc71; }
+
+    /* --- ボタンの選択状態による画像の切り替え --- */
+    #slide1:checked ~ .slider-wrapper { transform: translateX(0); }
+    #slide2:checked ~ .slider-wrapper { transform: translateX(-33.333%); }
+    #slide3:checked ~ .slider-wrapper { transform: translateX(-66.666%); }
+
+    /* --- 3つのドットボタン（ナビゲーション） --- */
+    .slider-nav {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      z-index: 10;
+    }
+
+    /* ドットボタンの基本デザイン */
+    .slider-nav label {
+      width: 14px;
+      height: 14px;
+      background: rgba(255, 255, 255, 0.4);
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    /* マウスを乗せたとき */
+    .slider-nav label:hover {
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    /* --- 現在選択されているドットボタンの中身を白く光らせる --- */
+    #slide1:checked ~ .slider-nav label[for="slide1"],
+    #slide2:checked ~ .slider-nav label[for="slide2"],
+    #slide3:checked ~ .slider-nav label[for="slide3"] {
+      background: #ffffff;
+      transform: scale(1.2); /* 選択中のドットを少し大きく */
+    }
+  </style>
+</head>
+<body>
+
+  <div class="slider-container">
+    <input type="radio" name="slider" id="slide1" checked>
+    <input type="radio" name="slider" id="slide2">
+    <input type="radio" name="slider" id="slide3">
+
+    <div class="slider-wrapper">
+      <div class="slider-slide">
+        <div class="demo-img bg1">スライド 1</div>
+      </div>
+      <div class="slider-slide">
+        <div class="demo-img bg2">スライド 2</div>
+      </div>
+      <div class="slider-slide">
+        <div class="demo-img bg3">スライド 3</div>
+      </div>
+    </div>
+
+    <div class="slider-nav">
+      <label for="slide1"></label>
+      <label for="slide2"></label>
+      <label for="slide3"></label>
+    </div>
+  </div>
+
+</body>
+</html>

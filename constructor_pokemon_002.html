@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ポケモン登場システム（複数対応版）</title>
+  <style>
+   
+  </style>
+</head>
+<body>
+	<h1>ポケモン登場システム（複数対応版）</h1>
+	
+	<button id="btn-fushigidane" data-index="0">フシギダネ</button>
+ 	<button id="btn-zenigame" data-index="1">ゼニガメ</button>
+  	<button id="btn-hitokage" data-index="2">ヒトカゲ</button>
+
+	<p id="words">ここに文字が入ります</p>
+	
+	<div id="pokemon_field">
+	
+	<p id="pokemon_name"></p>
+	<p id="pokemon_type"> 	
+	<p id="pokemon_hp"></p>
+
+ 	</div>
+
+	 <script>
+	 	class Pokemon{
+	 		constructor(pokemon_name,pokemon_type,pokemon_hp){
+	 			this.pokemon_name = pokemon_name;
+	 			this.pokemon_type = pokemon_type;
+	 			this.pokemon_hp = pokemon_hp;
+	 		}
+
+	 		
+	 	};
+
+	 	const pokemon_team = [
+	 		new Pokemon("フシギダネ","くさ",10),
+	 		new Pokemon("ゼニガメ","みず",10),
+	 		new Pokemon("ヒトカゲ","ほのお",10)
+	 	]
+
+	 	
+
+
+	 	function selectPokemon(index) {
+		  const target = pokemon_team[index];
+
+		  document.getElementById('words').textContent = `${target.pokemon_name}！君に決めた！`;
+		  document.getElementById("pokemon_name").textContent = target.pokemon_name;
+		  document.getElementById("pokemon_type").textContent = target.pokemon_type;
+		  document.getElementById("pokemon_hp").textContent = target.pokemon_hp;
+		}
+
+		// 3つの addEventListener をこれだけでまとめられる！
+		const field_pokemon = ["btn-fushigidane", "btn-zenigame", "btn-hitokage"]
+		field_pokemon.forEach((id, index) => {
+		  document.getElementById(id).addEventListener("click", function() {
+		    selectPokemon(index);
+		  });
+		});
+	</script>
+</body>
+</html>

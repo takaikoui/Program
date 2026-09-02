@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>フォーム自動保存機能</title>
+ 
+</head>
+<body>
+
+  <h2> お問い合わせフォーム（focusoutとデバウンス処理自動保存つき）</h2>
+
+ <form id="form_01">
+  <label for="name">お名前</label>
+   <input type="text" id="name" name="name">
+  <label for="address">住所</label>
+  <!--input type="textarea" id="address" name="address"-->
+  <textarea id="address" name="address"></textarea>
+ </form>
+ <button>送る</button>
+
+ <div id="savedStatus"></div>
+
+ <script>
+ const form_01 = document.getElementById("form_01");
+const STORAGE_KEY = "draft_form_data_hybrid";
+
+let timer; // デバウンス用のタイマーID
+
+// ★【共通化】実際にデータを保存する処理
+function saveFormData(reason) {
+  // もし待機中のデバウンスタイマーがあればクリア（二重実行を防ぐ）
+  clearTimeout(timer);
+
+  const formData = {
+    name: form_01.elements['name'].value,
+    address: form_01.elements['address'].value
+  };
+
+  // localStorage に保存
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+  console.log(`【${reason}により保存】`, formData);
+}
+
+// ---------------------------------------------------
+// ① カーソル（指）が離れた時の即時保存 (focusout)
+// ---------------------------------------------------
+form_01.addEventListener("focusout", function() {
+  // 入力途中で次の項目へ移動したり外をタップしたら、タイマーを待たずにすぐ保存！
+  saveFormData("focusout");
+});
+
+// ---------------------------------------------------
+// ② 入力中に手が止まった時の自動保存 (input + デバウンス)
+// ---------------------------------------------------
+form_01.addEventListener("input", function() {
+  // 前のタイマーをキャンセル
+  clearTimeout(timer);
+
+  // 入力の手が止まって0.5秒後に保存処理を呼ぶ
+  timer = setTimeout(function() {
+    saveFormData("debounce");
+  }, 500);
+});
+
+// ---------------------------------------------------
+// ③ ページ読み込み時の自動復元
+// ---------------------------------------------------
+window.addEventListener("DOMContentLoaded", function() {
+  const savedData = localStorage.getItem(STORAGE_KEY);
+  if (savedData) {
+    const formData = JSON.parse(savedData);
+    if (formData.name) form_01.elements['name'].value = formData.name;
+    if (formData.address) form_01.elements['address'].value = formData.address;
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>venderMachine</title>
+	<style>
+		.money{
+			display: flex;
+		}
+		.menu{
+			display: flex;
+		}
+	</style>
+</head>
+
+<body>
+
+<p>自動販売機もどきだよ</p>
+
+<input type="text" id="price"  value="0" disabled>
+<div id="money">
+	<button id="money-10" class="coin" value="10">10円</button>
+	<button id="money-100" class="coin" value="100">100円</button>
+	<button id="money-500" class="coin" value="500">500円</button>
+</div>
+
+
+<div id="menu">
+	<p>こちらがメニューとなります</p>
+	<button class="drink" value="100">レモンジュース 100円</button>
+	<button class="drink" value="120">コーラ　120円</button>
+	<button class="drink" value="90">緑茶 90円</button>
+	<button class="drink" value="220">マカ 220円</button>
+</div>
+
+<button id="change">お釣りを出してインプットエリアを0にする</button>
+<p id="message"></p>
+
+<script>
+	let stock = 0;
+	let price = document.getElementById('price');
+	let drinkPrice = document.getElementsByClassName("drink");
+	let coin = document.getElementsByClassName("coin");
+	let drink = document.getElementsByClassName("drink");
+	let message = document.getElementById("message")
+
+// ==========================================
+// ① お金ボタン（10円、100円、500円）を押したときの処理（昔ながらのfor文）
+// ==========================================
+// i が 0, 1, 2 と増えていき、ボタンの数（coin.length = 3）未満の間ループします
+for (let i = 0; i < coin.length; i++) {
+    
+    // i番目のボタンを1個ずつ取り出して、mBtn という変数に入れる
+    let mBtn = coin[i];
+
+    mBtn.addEventListener("pointerdown", function() {
+        // ボタンの value（"10" や "100"）を読み込んで数字に変換する
+        let addMoney = Number(this.value);
+        console.log(addMoney);
+        
+        // 合計金額（stock）にプラスする
+        stock += addMoney;
+        
+        // 画面の input（price）に合計金額を表示する！
+        price.value = stock;
+        
+        console.log(stock);
+    });
+}
+
+
+for (var i = 0; i < drink.length; i++) {
+	let dBtn = drink[i]; // i番目の商品ボタンを取り出す
+
+		dBtn.addEventListener("pointerdown", function() {
+			// 押されたボタン（this）の value から、商品の値段を数字で取得する！
+			let drinkPrice = Number(this.value);
+			
+			// 【条件分岐】もし持っているお金（stock）が、商品の値段より「少なかったら」
+			if (stock < drinkPrice) {
+				message.textContent = "お金が足りないよ！";
+				console.log("購入失敗: お金が足りません");
+				return; // ここで処理を終了（購入させない）
+			} else {
+				// お金が足りていれば、合計金額から商品の値段を引き算して上書きする！
+				stock -= drinkPrice;
+				
+				// 画面の金額表示も、減った後の金額（stock）に書き換える！
+				price.value = stock;
+				
+				let drinkName = this.textContent;
+				message.textContent = `ガシャコン！${drinkName}商品が出ました。`;
+				console.log("購入成功！ 残高:", stock);
+			}
+		});
+}
+let change = document.getElementById("change");
+change.addEventListener("pointerdown",function(){
+	message.textContent = `ちゃりん！${stock}円お釣りが出ました`;
+	stock = 0;
+	price.value = stock;
+})
+
+</script>
+
+</body>
+
+</html>

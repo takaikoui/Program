@@ -32,7 +32,11 @@
         // レート設定
         let rate = 4000;
         let moneyRate = 0;
-        let firstYakumonoOdds = 50; // 初めの役物：50分の1
+
+        // 確率設定（統一）
+        const firstOdds = 50;  // 1/50
+        const secondOdds = 3;  // 1/3
+        const thirdOdds = 5;   // 1/5
 
         // それぞれの通過数を数える変数
         let firstPassCount = 0;
@@ -53,21 +57,23 @@
         const thirdEl = document.getElementById('third');
         const ichijoEl = document.getElementById('ichijo');
 
-        // 役物の確率設定（あなたのコードの変数名を採用）
-        var firstYakumono = 50;
-        var secondYakumonoOss = 3; // 次のクルーン：3分の1
-        var thirdYakumono = 5;     // 最後のクルーン：5分の1
-
-        // 一条のセリフ初期化（即時関数で1回だけ実行）
+        // 一条のセリフ初期化
         (() => {
             ichijoEl.textContent = "ふっふっふ……沼へようこそ……。";
         })();
 
+        // スマホでボタンを長押しした時に画面が引っ張られたりメニューが出たりするのをJSで防止
+        btn.style.touchAction = 'none';
+        btn.style.userSelect = 'none';
+        btn.style.webkitUserSelect = 'none';
 
         // カウント開始
-        function start() {
-            if (isCleared) return; // すでにクリアしてたら動かさない
-            if (timer !== null) return;
+        function start(e) {
+            if (isCleared || timer !== null) return;
+            
+            // タッチ時のデフォルト動作（ズームやメニュー表示）を抑制
+            if (e && e.cancelable) e.preventDefault();
+
             timer = setInterval(() => {
                 count++;
                 moneyRate += rate;
@@ -87,26 +93,25 @@
 
         // 【1. 初めの役物】
         function checkFirstYakumono() {
-          if (isCleared) return;
+            if (isCleared) return;
 
-          if (Math.random() * firstYakumonoOdds < 1) {
-              firstPassCount++;
-              firstEl.textContent = firstPassCount;
-              checkSecondCroon(); // 突破したら第二へ
-          }
+            if (Math.random() * firstOdds < 1) {
+                firstPassCount++;
+                firstEl.textContent = firstPassCount;
+                checkSecondCroon(); // 突破したら第二へ
+            }
         }
 
         // 【2. 次のクルーン（手前）】
         function checkSecondCroon() {
             if (isCleared) return;
 
-            // 「第一のクルーンが…」のセリフを1回だけ言わせる（使い捨て）
             if (!saidFirst) {
                 ichijoEl.textContent = "第一の役物が・・・";
                 saidFirst = true;
             }
 
-            if (Math.random() * secondYakumonoOss < 1) {
+            if (Math.random() * secondOdds < 1) {
                 secondPassCount++;
                 secondEl.textContent = secondPassCount;
                 checkThirdCroon(); // 突破したら第三へ
@@ -117,17 +122,16 @@
         function checkThirdCroon() {
             if (isCleared) return;
 
-            // 「第二のクルーンが…」のセリフを1回だけ言わせる（使い捨て）
             if (!saidSecond) {
                 ichijoEl.textContent = "第二のクルーンが・・・";
                 saidSecond = true;
             }
 
-            if (Math.random() * thirdYakumono < 1) {
+            if (Math.random() * thirdOdds < 1) {
                 thirdPassCount++;
                 thirdEl.textContent = thirdPassCount;
 
-                isCleared = true; // クリア状態にする（これ以降、セリフの上書きを完全ブロック）
+                isCleared = true;
 
                 // 大当たり演出
                 ichijoEl.textContent = "バカな…！あり得ん…！この沼が破られるなど…！！一億円獲得…！！";
@@ -138,18 +142,15 @@
             }
         }
 
-        // --- マウスイベント（PC用） ---
-        btn.addEventListener('mousedown', start);
-        btn.addEventListener('mouseup', stop);
-        btn.addEventListener('mouseleave', stop);
-
-        // --- タッチイベント（スマホ用） ---
-        btn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            start();
+        // --- スマホ＆PC共通（Pointer Events） ---
+        btn.addEventListener('pointerdown', (e) => {
+            // 指が多少ボタンから外れてもしっかり押しっぱなし判定を維持
+            btn.setPointerCapture(e.pointerId);
+            start(e);
         });
-        btn.addEventListener('touchend', stop);
-        btn.addEventListener('touchcancel', stop);
+
+        btn.addEventListener('pointerup', stop);
+        btn.addEventListener('pointercancel', stop);
 
     </script>
 </body>

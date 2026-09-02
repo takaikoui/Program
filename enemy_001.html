@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>エネミーぼろぼろ</title>
+</head>
+<body>
+
+	<h1>ボタンを押すと下にエネミーがぼろぼろ出てきます</h1>
+	<button id="boroboro">でてこーい</button>
+	<section>
+		<div id="enemy"></div>
+	</section>
+	<script>
+		const boroboro = document.getElementById('boroboro');
+		const enemy = document.getElementById("enemy");
+
+		class boroEnemy{
+			constructor(name,level,hp){
+				this.name = name,
+				this.level = level,
+				this.hp = hp
+			};
+		};
+
+		boroboro.addEventListener("click",function(){
+			if(){	
+				let borori = new boroEnemy("足軽",001,10);
+				let enemyDiv = document.createElement("div");
+				enemyDiv.textContent = `拙者は${borori.name}、レベルは${borori.level}でHPは${borori.hp}じゃ！`;
+				enemy.appendChild(enemyDiv); 
+			}
+		});
+
+	</script>
+</body>
+</html>

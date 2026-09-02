@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOOKアルゴリズム・エレベーター（2秒停止ギミック付き）</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f7f9fb;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+        p.subtitle {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
+        .main-container {
+            display: flex;
+            gap: 40px;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            align-items: center;
+        }
+        
+        /* スクロールインジケーター風シャフト */
+        .indicator-track-container {
+            position: relative;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+        }
+        .track-line {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 100%;
+            background: #e2e8f0;
+            border-radius: 2px;
+            z-index: 1;
+        }
+        .elevator-dot {
+            position: absolute;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 16px;
+            height: 16px;
+            background: #3b82f6;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4);
+            z-index: 2;
+            transition: top 0.05s linear;
+        }
+        .track-marks {
+            position: relative;
+            height: 100%;
+            display: flex;
+            flex-direction: column-reverse;
+            justify-content: space-between;
+            z-index: 0;
+            font-size: 11px;
+            color: #94a3b8;
+            width: 30px;
+            text-align: right;
+            padding-right: 15px;
+        }
+
+        /* コントロールパネル */
+        .panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 220px;
+        }
+        .status-display {
+            background: #f1f5f9;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #475569;
+        }
+        .floor-buttons {
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 6px;
+        }
+        .floor-btn {
+            padding: 8px 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+            color: #64748b;
+        }
+        .floor-btn:hover {
+            background: #f1f5f9;
+        }
+        .floor-btn.active {
+            background: #eff6ff;
+            color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        .dot-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #cbd5e1;
+        }
+        .floor-btn.active .dot-indicator {
+            background: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+        }
+        button.action-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+            color: white;
+            transition: opacity 0.2s;
+        }
+        button.action-btn:hover {
+            opacity: 0.9;
+        }
+        #startBtn { background: #10b981; }
+        #resetBtn { background: #94a3b8; }
+    </style>
+</head>
+<body>
+
+    <h1>LOOK Algorithm Elevator</h1>
+    <p class="subtitle">2秒停止ギミック付きシミュレーション</p>
+
+    <div class="main-container">
+        <!-- スクロールインジケーター風シャフト -->
+        <div class="indicator-track-container" id="trackContainer">
+            <div class="track-line"></div>
+            <div class="elevator-dot" id="elevatorDot"></div>
+            <div class="track-marks" id="trackMarks"></div>
+        </div>
+
+        <!-- 操作パネル -->
+        <div class="panel">
+            <div class="status-display" id="statusDisplay">
+                1階 - 待機中
+            </div>
+
+            <div class="floor-buttons" id="floorButtons"></div>
+
+            <div class="controls">
+                <button class="action-btn" id="startBtn" onclick="toggleSimulation()">開始</button>
+                <button class="action-btn" id="resetBtn" onclick="resetSimulation()">リセット</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TOTAL_FLOORS = 10;
+        let currentPos = 0; 
+        let direction = 0; 
+        let requests = new Set();
+        let isRunning = false;
+        let animationInterval = null;
+        let isWaiting = false; // 2秒停止中かどうかを管理するフラグ
+
+        const elevatorDot = document.getElementById('elevatorDot');
+        const floorButtonsContainer = document.getElementById('floorButtons');
+        const trackMarks = document.getElementById('trackMarks');
+        const statusDisplay = document.getElementById('statusDisplay');
+
+        function init() {
+            for (let i = 0; i < TOTAL_FLOORS; i++) {
+                const mark = document.createElement('div');
+                mark.textContent = `${i + 1}F`;
+                trackMarks.appendChild(mark);
+
+                const btn = document.createElement('div');
+                btn.className = 'floor-btn';
+                btn.id = `btn-${i}`;
+                btn.textContent = `${i + 1}階`; // innerHTMLの代わりにtextContentを使う
+                
+                // アロー関数を使わない書き方
+                btn.onclick = function() {
+                    toggleRequest(i);
+                };
+
+                floorButtonsContainer.appendChild(btn);
+            }
+            updateElevatorPositionDOM();
+        }
+
+        function toggleRequest(floor) {
+            if (requests.has(floor)) {
+                requests.delete(floor);
+                document.getElementById(`btn-${floor}`).classList.remove('active');
+            } else {
+                requests.add(floor);
+                document.getElementById(`btn-${floor}`).classList.add('active');
+            }
+        }
+
+        function toggleSimulation() {
+            isRunning = !isRunning;
+            const startBtn = document.getElementById('startBtn');
+            startBtn.textContent = isRunning ? '一時停止' : '開始';
+            startBtn.style.background = isRunning ? '#f59e0b' : '#10b981';
+
+            if (isRunning && !animationInterval) {
+                animationInterval = setInterval(loop, 25);
+            } else if (!isRunning && animationInterval) {
+                clearInterval(animationInterval);
+                animationInterval = null;
+            }
+        }
+
+        function resetSimulation() {
+            isRunning = false;
+            isWaiting = false;
+            clearInterval(animationInterval);
+            animationInterval = null;
+            
+            const startBtn = document.getElementById('startBtn');
+            startBtn.textContent = '開始';
+            startBtn.style.background = '#10b981';
+
+            requests.clear();
+            for (let i = 0; i < TOTAL_FLOORS; i++) {
+                document.getElementById(`btn-${i}`).classList.remove('active');
+            }
+            currentPos = 0;
+            direction = 0;
+            updateElevatorPositionDOM();
+            statusDisplay.textContent = '1階 - 待機中';
+        }
+
+        // LOOKアルゴリズムのメインループ
+        function loop() {
+            // 2秒停止中の場合は移動処理を行わない
+            if (isWaiting) return;
+
+            if (requests.size === 0) {
+                direction = 0;
+                const currentFloorInt = Math.round(currentPos);
+                statusDisplay.textContent = `${currentFloorInt + 1}階 - 待機中`;
+                updateElevatorPositionDOM();
+                return;
+            }
+
+            const currentFloorInt = Math.round(currentPos);
+
+            // 到着判定 & 2秒停止ギミックの実行
+            if (requests.has(currentFloorInt) && Math.abs(currentPos - currentFloorInt) < 0.04) {
+                // ピッタリの位置に補正して停止
+                currentPos = currentFloorInt;
+                updateElevatorPositionDOM();
+
+                requests.delete(currentFloorInt);
+                document.getElementById(`btn-${currentFloorInt}`).classList.remove('active');
+
+                // 2秒停止状態に移行
+                isWaiting = true;
+                statusDisplay.textContent = `${currentFloorInt + 1}階 - 到着 (扉オープン)`;
+
+                setTimeout(function() {
+                    isWaiting = false; // 2秒後に停止解除
+                }, 2000);
+
+                return; // このフレームの移動処理をスキップ
+            }
+
+            // LOOKの進行方向決定ロジック
+            if (direction === 0) {
+                const firstReq = Array.from(requests)[0];
+                direction = firstReq >= currentPos ? 1 : -1;
+            } else {
+                if (direction === 1) {
+                    const anyAbove = Array.from(requests).some(r => r >= currentPos);
+                    if (!anyAbove) direction = -1;
+                } else if (direction === -1) {
+                    const anyBelow = Array.from(requests).some(r => r <= currentPos);
+                    if (!anyBelow) direction = 1;
+                }
+            }
+
+            // 移動
+            const speed = 0.04;
+            currentPos += direction * speed;
+
+            if (currentPos < 0) currentPos = 0;
+            if (currentPos > TOTAL_FLOORS - 1) currentPos = TOTAL_FLOORS - 1;
+
+            updateElevatorPositionDOM();
+
+            const rounded = Math.round(currentPos) + 1;
+            if (direction === 1) statusDisplay.textContent = `${rounded}階 - 上昇中 ▲`;
+            else if (direction === -1) statusDisplay.textContent = `${rounded}階 - 下降中 ▼`;
+            else statusDisplay.textContent = `${rounded}階 - 停止中`;
+        }
+
+        function updateElevatorPositionDOM() {
+            const percent = (currentPos / (TOTAL_FLOORS - 1)) * 100;
+            elevatorDot.style.top = `${100 - percent}%`;
+        }
+
+        init();
+    </script>
+</body>
+</html>

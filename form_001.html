@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ECサイト購入フォーム - 優しめのリアルタイムバリデーション</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f4f6f8; margin: 0; padding: 20px; color: #333; }
+    .form-card { max-width: 500px; margin: 30px auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+    h2 { margin-top: 0; font-size: 1.4rem; color: #1a1a1a; text-align: center; }
+    
+    .form-group { margin-bottom: 20px; position: relative; }
+    label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 0.9rem; }
+    .required { color: #e53935; margin-left: 4px; }
+    
+    .input-wrapper { position: relative; }
+    input {
+      width: 100%;
+      padding: 12px 40px 12px 14px;
+      font-size: 1rem;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus { border-color: #2196f3; box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.15); }
+
+    /* 成功・エラー状態のスタイル */
+    .form-group.success input { border-color: #4caf50; background-color: #f6fff6; }
+    .form-group.error input { border-color: #f44336; background-color: #fff8f8; }
+
+    /* アイコン表示 */
+    .status-icon {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.2rem;
+      pointer-events: none;
+    }
+    .form-group.success .status-icon::after { content: "✓"; color: #4caf50; font-weight: bold; }
+    .form-group.error .status-icon::after { content: "⚠️"; font-size: 1rem; }
+
+    /* メッセージ */
+    .message { font-size: 0.82rem; margin-top: 6px; display: block; min-height: 18px; color: #666; }
+    .form-group.error .message { color: #d32f2f; }
+    .form-group.success .message { color: #388e3c; }
+
+    .card-brand {
+      position: absolute;
+      right: 40px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: #666;
+      background: #eee;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 10px;
+    }
+    .submit-btn:hover { background: #43a047; }
+    .submit-btn:active { transform: scale(0.99); }
+  </style>
+</head>
+<body>
+
+<div class="form-card">
+  <h2>🛍️ お届け先・お支払い情報の入力</h2>
+  <form id="checkout-form" novalidate>
+    
+    <!-- 氏名 -->
+    <div class="form-group" id="group-name">
+      <label for="fullname">お名前<span class="required">*</span></label>
+      <div class="input-wrapper">
+        <input type="text" id="fullname" placeholder="山田 太郎">
+        <span class="status-icon"></span>
+      </div>
+      <span class="message"></span>
+    </div>
+
+    <!-- 郵便番号 -->
+    <div class="form-group" id="group-zip">
+      <label for="zipcode">郵便番号<span class="required">*</span></label>
+      <div class="input-wrapper">
+        <input type="text" id="zipcode" placeholder="1000001 (ハイフンなし)" maxlength="8">
+        <span class="status-icon"></span>
+      </div>
+      <span class="message"></span>
+    </div>
+
+    <!-- 住所 -->
+    <div class="form-group" id="group-address">
+      <label for="address">ご住所<span class="required">*</span></label>
+      <div class="input-wrapper">
+        <input type="text" id="address" placeholder="東京都千代田区千代田1-1">
+        <span class="status-icon"></span>
+      </div>
+      <span class="message"></span>
+    </div>
+
+    <!-- 電話番号 -->
+    <div class="form-group" id="group-phone">
+      <label for="phone">電話番号<span class="required">*</span></label>
+      <div class="input-wrapper">
+        <input type="tel" id="phone" placeholder="09012345678 (ハイフンなし)" maxlength="13">
+        <span class="status-icon"></span>
+      </div>
+      <span class="message"></span>
+    </div>
+
+    <!-- クレジットカード番号 -->
+    <div class="form-group" id="group-card">
+      <label for="cardnumber">カード番号<span class="required">*</span></label>
+      <div class="input-wrapper">
+        <input type="text" id="cardnumber" placeholder="4532 1234 5678 9012" maxlength="19">
+        <span id="card-brand" class="card-brand" style="display:none;"></span>
+        <span class="status-icon"></span>
+      </div>
+      <span class="message"></span>
+    </div>
+
+    <!-- 購入ボタン -->
+    <button type="submit" id="submit-btn" class="submit-btn">購入を確定する</button>
+  </form>
+</div>
+
+<script>
+  const fields = {
+    name: document.getElementById('fullname'),
+    zip: document.getElementById('zipcode'),
+    address: document.getElementById('address'),
+    phone: document.getElementById('phone'),
+    card: document.getElementById('cardnumber')
+  };
+  const cardBrand = document.getElementById('card-brand');
+
+  function normalizeNumber(str) {
+    return str.replace(/[Ａ-Ｚａ-ｚ０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
+              .replace(/[-ー—]/g, '');
+  }
+
+  // 表示リセット（初期の中立状態に戻す）
+  function clearStatus(fieldKey) {
+    const group = document.getElementById(`group-${fieldKey}`);
+    const msgEl = group.querySelector('.message');
+    group.classList.remove('error', 'success');
+    msgEl.textContent = "";
+  }
+
+  // 成功/エラー表示設定
+  function setStatus(fieldKey, isValid, message = "") {
+    const group = document.getElementById(`group-${fieldKey}`);
+    const msgEl = group.querySelector('.message');
+
+    if (isValid) {
+      group.classList.remove('error');
+      group.classList.add('success');
+      msgEl.textContent = message || "OK";
+    } else {
+      group.classList.remove('success');
+      group.classList.add('error');
+      msgEl.textContent = message;
+    }
+  }
+
+  // 各入力欄の判定ロジック
+  function validateField(key, isSubmit = false) {
+    const field = fields[key];
+    const rawVal = field.value.trim();
+
+    // ★ポイント：送信時以外、空入力ならエラーを出さずにリセットする
+    if (!isSubmit && rawVal === "") {
+      clearStatus(key);
+      return false;
+    }
+
+    if (rawVal === "") {
+      setStatus(key, false, 'この項目は必須です。');
+      return false;
+    }
+
+    if (key === 'name') {
+      setStatus('name', true);
+      return true;
+    }
+
+    if (key === 'zip') {
+      let val = normalizeNumber(rawVal);
+      field.value = val;
+      if (!/^\d{7}$/.test(val)) {
+        setStatus('zip', false, '7桁の数字をハイフonなしで入力してください');
+        return false;
+      }
+      setStatus('zip', true);
+      if (val === "1000001" && !fields.address.value) {
+        fields.address.value = "東京都千代田区千代田1-1";
+        setStatus('address', true, '住所が自動入力されました');
+      }
+      return true;
+    }
+
+    if (key === 'address') {
+      if (rawVal.length < 5) {
+        setStatus('address', false, '正しい住所を入力してください');
+        return false;
+      }
+      setStatus('address', true);
+      return true;
+    }
+
+    if (key === 'phone') {
+      let val = normalizeNumber(rawVal);
+      field.value = val;
+      if (!/^(0\d{9,10})$/.test(val)) {
+        setStatus('phone', false, '10桁または11桁の数字で入力してください');
+        return false;
+      }
+      setStatus('phone', true);
+      return true;
+    }
+
+    if (key === 'card') {
+      const numOnly = rawVal.replace(/\s/g, '');
+      if (!/^\d{14,16}$/.test(numOnly)) {
+        setStatus('card', false, '正しいカード番号（14〜16桁）を入力してください');
+        return false;
+      }
+      setStatus('card', true);
+      return true;
+    }
+  }
+
+  // -------------------------------------------------------------
+  // イベント設定（空のままフォーカスが外れた場合はスルー）
+  // -------------------------------------------------------------
+  Object.keys(fields).forEach(key => {
+    fields[key].addEventListener('blur', () => {
+      validateField(key, false);
+    });
+  });
+
+  // クレジットカードの4桁整列＆ブランド表示
+  fields.card.addEventListener('input', (e) => {
+    let val = normalizeNumber(e.target.value).replace(/\D/g, '');
+    if (val.startsWith('4')) {
+      cardBrand.textContent = "VISA"; cardBrand.style.display = "block";
+    } else if (val.startsWith('5')) {
+      cardBrand.textContent = "Master"; cardBrand.style.display = "block";
+    } else {
+      cardBrand.style.display = "none";
+    }
+    e.target.value = val.match(/.{1,4}/g)?.join(' ') || val;
+  });
+
+  // フォーム送信時に初めて全体チェックを実施
+  document.getElementById('checkout-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    let isAllValid = true;
+
+    Object.keys(fields).forEach(key => {
+      const isValid = validateField(key, true); // 送信フラグを立ててチェック
+      if (!isValid) isAllValid = false;
+    });
+
+    if (isAllValid) {
+      alert('🎉 ご注文が確定しました！ありがとうございます！');
+    } else {
+      // エラーのある最初の要素へスクロールフォーカス
+      const firstError = document.querySelector('.form-group.error input');
+      if (firstError) firstError.focus();
+    }
+  });
+</script>
+
+</body>
+</html>
